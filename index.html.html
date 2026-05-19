@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Knotted Weekly Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #faf8f5; --ink: #1a1814; --ink-soft: #6b6359; --rule: #e5dfd4;
+  --opener: #5d7a3d; --mid: #7b9c5c; --dish: #c4541f; --station: #9d3812;
+  --boh: #5c6b78; --boh-mgr: #3e4c58;
+  --jr: #7b9c5c; --md: #c4541f; --sr: #5a3a78;
+  /* Role-based (simplified): front-of-house = green, closers = purple */
+  --front: #5d7a3d;     /* sage green, opener/rush/peak/mid */
+  --closer: #5a3a78;    /* deep purple, dish closer + station closer */
+  --good: #4a6b2c; --warn: #b88718; --bad: #9d3812;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg); color: var(--ink);
+  padding: 28px 28px 60px; max-width: 1600px; margin: 0 auto;
+  font-size: 12px; line-height: 1.5;
+}
+header.masthead {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding-bottom: 14px; margin-bottom: 22px; border-bottom: 2px solid var(--ink);
+}
+.masthead h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: 30px; letter-spacing: -0.02em; }
+.masthead h1 em { font-style: italic; font-weight: 400; color: var(--ink-soft); }
+.masthead .sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.08em; }
+
+.summary {
+  display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1.2fr; gap: 0;
+  margin-bottom: 20px; border: 1px solid var(--rule); background: white;
+}
+.summary .col {
+  padding: 14px 18px; border-right: 1px solid var(--rule);
+  display: flex; flex-direction: column; justify-content: flex-start;
+  min-height: 78px;
+}
+.summary .col:last-child { border: none; }
+.summary .k {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--ink-soft); margin-bottom: 6px;
+}
+.summary .v {
+  font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700;
+  letter-spacing: -0.01em; line-height: 1.1;
+}
+.summary .v.mono { font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+.summary .v-pct {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500;
+  color: var(--ink-soft); margin-left: 6px; letter-spacing: 0;
+}
+.summary .v-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500;
+  color: var(--ink-soft); margin-left: 6px; letter-spacing: 0;
+}
+.summary .meta {
+  font-size: 10px; color: var(--ink-soft); margin-top: auto; padding-top: 6px;
+  font-family: 'JetBrains Mono', monospace; line-height: 1.4;
+}
+.pct.ok { color: var(--good); } .pct.under { color: var(--good); } .pct.over { color: var(--bad); }
+
+/* Labor goal banner */
+.goal-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 22px; margin-bottom: 20px;
+  border-left: 4px solid; border-radius: 0;
+  font-family: 'Inter', sans-serif;
+}
+.goal-banner.trim-over {
+  background: #fdf1e6; border-left-color: var(--bad); color: #5a2810;
+}
+.goal-banner.trim-under {
+  background: #ecf3e3; border-left-color: var(--good); color: #2d4517;
+}
+.goal-banner.trim-ok {
+  background: #f0ede5; border-left-color: var(--ink-soft); color: var(--ink);
+}
+.goal-left { display: flex; align-items: center; gap: 16px; }
+.goal-arrow {
+  font-family: 'Fraunces', serif; font-size: 36px; font-weight: 700;
+  line-height: 1; opacity: 0.85;
+}
+.goal-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+  font-weight: 600; margin-bottom: 3px;
+}
+.goal-detail {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  font-weight: 500; opacity: 0.85;
+}
+.goal-right { text-align: right; }
+.goal-amount {
+  font-family: 'Fraunces', serif; font-size: 28px; font-weight: 700;
+  letter-spacing: -0.01em; line-height: 1.1;
+}
+.goal-unit {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  font-weight: 500; opacity: 0.7; margin-left: 2px;
+}
+.goal-annual {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  font-weight: 500; opacity: 0.75; margin-top: 4px;
+}
+
+.legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; font-size: 10px; color: var(--ink-soft); }
+.legend.assumptions { margin-top: -10px; margin-bottom: 22px; padding-top: 10px; border-top: 1px dashed var(--rule); }
+.legend .group { display: flex; gap: 10px; align-items: center; padding-right: 14px; border-right: 1px solid var(--rule); }
+.legend .group:last-child { border-right: none; }
+.legend .item { display: flex; align-items: center; gap: 5px; }
+.legend .item.rule { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 1px 6px; background: rgba(0,0,0,0.025); border-radius: 3px; }
+.legend .item.rule.sep { background: rgba(124,156,92,0.10); }
+.legend .sw { width: 14px; height: 12px; border: 1px solid rgba(0,0,0,0.08); }
+.sw-opener { background: var(--opener); }
+.sw-mid    { background: var(--mid); }
+.sw-dish   { background: var(--dish); }
+.sw-station{ background: var(--station); }
+.sw-front  { background: var(--front); }
+.sw-closer { background: var(--closer); }
+.sw-boh    { background: var(--boh); }
+.sw-boh-mgr { background: var(--boh-mgr); }
+.sw-hc-0 { background: #f4f1eb; }
+.sw-hc-1 { background: #cfddb7; }
+.sw-hc-2 { background: #9dbf78; }
+.sw-hc-3 { background: #5d7a3d; }
+.sw-hc-4 { background: #3d5827; }
+
+.day {
+  background: white; border: 1px solid var(--rule); margin-bottom: 18px;
+  page-break-inside: avoid;
+}
+.day-head {
+  display: flex; padding: 12px 18px; border-bottom: 1px solid var(--rule);
+  align-items: center; gap: 16px; justify-content: space-between;
+}
+.day-head .name { display: flex; align-items: baseline; gap: 10px; }
+.day-head .dnum { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; }
+.day-head .dlabel { font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--ink-soft); }
+.day-head .stats { display: flex; gap: 18px; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.day-head .stats .stat { text-align: right; }
+.day-head .stats .stat .lbl { display: block; font-size: 9px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; }
+.day-head .stats .stat .val { font-weight: 600; }
+.day-head .stats .pct.ok    .val { color: var(--good); }
+.day-head .stats .pct.over  .val { color: var(--bad); }
+.day-head .stats .pct.under .val { color: var(--good); }
+
+.day-body { padding: 14px 18px 16px; }
+
+/* Shift bars (Gantt) */
+.timeline-axis {
+  display: flex; padding-left: 100px; margin-bottom: 4px;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink-soft);
+}
+.timeline-axis .tick {
+  flex: 1; text-align: left; border-left: 1px solid var(--rule); padding-left: 3px;
+}
+.shift-row { display: flex; align-items: center; margin-bottom: 3px; }
+.shift-row .lbl {
+  width: 100px; padding-right: 8px; font-size: 10px;
+  display: flex; align-items: center; gap: 5px;
+}
+.shift-row .lbl .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-opener  { background: var(--opener); }
+.dot-mid     { background: var(--mid); }
+.dot-dish    { background: var(--dish); }
+.dot-station { background: var(--station); }
+.dot-boh     { background: var(--boh); }
+.dot-boh-mgr { background: var(--boh-mgr); }
+.dot-jr { background: var(--jr); }
+.dot-md { background: var(--md); }
+.dot-sr { background: var(--sr); }
+.dot-front   { background: var(--front); }
+.dot-closer  { background: var(--closer); }
+
+.shift-row .track {
+  flex: 1; height: 22px; background: #f9f7f1;
+  border: 1px solid var(--rule); position: relative;
+}
+.bar {
+  position: absolute; top: 0; bottom: 0;
+  color: white; font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  font-weight: 500; display: flex; align-items: center; padding: 0 6px;
+  overflow: hidden; white-space: nowrap;
+}
+.bar.b-opener  { background: var(--opener); }
+.bar.b-mid     { background: var(--mid); }
+.bar.b-dish    { background: var(--dish); }
+.bar.b-station { background: var(--station); }
+.bar.b-boh     { background: var(--boh); }
+.bar.b-boh-mgr { background: var(--boh-mgr); }
+.bar.b-jr { background: var(--jr); }
+.bar.b-md { background: var(--md); }
+.bar.b-sr { background: var(--sr); }
+.bar.b-front  { background: var(--front); }
+.bar.b-closer { background: var(--closer); }
+.bar .brk {
+  position: absolute; top: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    45deg, rgba(255,255,255,0.55), rgba(255,255,255,0.55) 3px,
+    transparent 3px, transparent 7px);
+  border-left: 1px solid rgba(255,255,255,0.6);
+  border-right: 1px solid rgba(255,255,255,0.6);
+}
+
+/* Heatmaps */
+.heatmaps { margin-top: 14px; }
+.heat-row { display: flex; align-items: center; margin-bottom: 2px; }
+.heat-row .lbl {
+  width: 100px; padding-right: 8px; font-size: 10px;
+  font-family: 'JetBrains Mono', monospace; color: var(--ink-soft);
+  display: flex; align-items: center; gap: 4px;
+}
+.heat-row .lbl .name { font-weight: 500; color: var(--ink); }
+.heat-row .cells { flex: 1; display: flex; gap: 1px; height: 28px; }
+.heat-cell {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  font-weight: 500; border-radius: 1px;
+}
+.heat-row.compare .lbl { font-weight: 600; }
+
+.divider { height: 8px; }
+
+@media print {
+  body { padding: 14px; background: white; font-size: 10px; }
+  .day { border: 1px solid var(--rule); }
+  .page-break { page-break-before: always; }
+  /* For print: show both tabs as pages */
+  .tabs { display: none; }
+  .tab-panel { display: block !important; }
+  .tab-panel + .tab-panel { page-break-before: always; }
+}
+
+/* ---- Tab navigation ---- */
+.tabs {
+  display: flex; gap: 0; margin-bottom: 22px;
+  border-bottom: 2px solid var(--ink);
+}
+.tab-btn {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 14px 22px 12px; background: transparent;
+  border: none; border-bottom: 3px solid transparent;
+  margin-bottom: -2px; cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  color: var(--ink-soft);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  text-align: left;
+}
+.tab-btn:hover { color: var(--ink); background: rgba(0,0,0,0.02); }
+.tab-btn.active {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+  background: white;
+}
+.tab-btn .tab-num {
+  font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700;
+  letter-spacing: -0.01em; opacity: 0.4;
+}
+.tab-btn.active .tab-num { opacity: 1; }
+.tab-btn .tab-title {
+  font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
+}
+.tab-btn .tab-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--ink-soft);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+
+.page-break { page-break-before: always; padding-top: 14px; }
+
+.projection-summary {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.proj-block {
+  background: white;
+  border: 1px solid var(--rule);
+  padding: 16px 18px;
+}
+.proj-block-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+.proj-sales-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--rule);
+}
+.proj-sales-amount {
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.proj-sales-vs-base {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.delta-up { color: #4a6b2a; }
+.delta-down { color: #9d3812; }
+
+.proj-factor-list, .proj-issue-list {
+  margin: 0;
+  padding-left: 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.proj-factor-list li { margin-bottom: 4px; }
+.proj-issue-list li {
+  margin-bottom: 6px;
+  padding-left: 6px;
+  list-style: none;
+  position: relative;
+}
+.proj-issue-list li::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c4541f;
+}
+.proj-issue-list li.sev-warning::before { background: #d4a015; }
+.proj-issue-list li.no-issues::before { background: #4a6b2a; }
+.proj-issue-list li .when {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  color: var(--ink);
+}
+.proj-issue-list li .fix {
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+/* Day-header chip for adjustment summary */
+.day-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.day-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  background: rgba(196, 84, 31, 0.10);
+  color: #7a2818;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+/* Pinch-point cell highlight */
+.heat-cell.pinch {
+  box-shadow: inset 0 0 0 2px #c4541f;
+  position: relative;
+}
+
+/* Per-day baseline delta in stats */
+.stats .val .pct-small {
+  font-size: 10px;
+  font-weight: 400;
+  margin-left: 3px;
+  opacity: 0.7;
+}
+
+</style></head>
+<body>
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="current" role="tab" aria-selected="true">
+    <span class="tab-num">1</span>
+    <span class="tab-title">Current Schedule</span>
+    <span class="tab-sub">Mar 23 – May 18, 2026</span>
+  </button>
+  <button class="tab-btn" data-tab="projection" role="tab" aria-selected="false">
+    <span class="tab-num">2</span>
+    <span class="tab-title">Forward Projection</span>
+    <span class="tab-sub">May 25 – May 31, 2026</span>
+  </button>
+</nav>
+
+<div id="tab-current" class="tab-panel active" role="tabpanel">
+<header class="masthead">
+  <h1>Knotted AD <em>— Labor Model &amp; Scheduling Tool</em></h1>
+  <div class="sub">Shifts &middot; orders &middot; sales &middot; FOH need vs scheduled</div>
+</header>
+
+<section class="summary">
+  <div class="col">
+    <div class="k">Projected Weekly Sales</div>
+    <div class="v">$28,787</div>
+    <div class="meta">based on previous 8 weeks of Toast POS data (Mar 23, 2026 – May 18, 2026)</div>
+  </div>
+  <div class="col">
+    <div class="k">FOH Hourly</div>
+    <div class="v">$4,680 <span class="v-pct">16.3%</span></div>
+    <div class="meta">231.5 paid hrs · 34 shifts</div>
+  </div>
+  <div class="col">
+    <div class="k">BOH Hourly</div>
+    <div class="v">$1,512 <span class="v-pct">5.3%</span></div>
+    <div class="meta">72.0 paid hrs · 14 shifts</div>
+  </div>
+  <div class="col">
+    <div class="k">Manager Salaries</div>
+    <div class="v">$3,038 <span class="v-pct">10.6%</span></div>
+    <div class="meta">$158K/yr combined</div>
+  </div>
+  <div class="col">
+    <div class="k">Total Labor</div>
+    <div class="v"><span class="pct over">32.1%</span> <span class="v-sub">$9,230</span></div>
+    <div class="meta">over by 4.1pp of 28%</div>
+  </div>
+</section>
+
+<section class="goal-banner trim-over">
+  <div class="goal-left">
+    <div class="goal-arrow">↓</div>
+    <div>
+      <div class="goal-label">Over goal — trim needed</div>
+      <div class="goal-detail">Current 32.1% &middot; Target 28% &middot; Delta 4.1 pp</div>
+    </div>
+  </div>
+  <div class="goal-right">
+    <div class="goal-amount">$1,170<span class="goal-unit">/wk</span></div>
+    <div class="goal-annual">≈ 58 labor hours/wk (at $20/hr assumed blended)</div>
+  </div>
+</section>
+
+<div class="legend">
+  <div class="group">
+    <span style="font-weight: 600; color: var(--ink);">Shifts:</span>
+    <div class="item"><span class="sw sw-front"></span>Opener / Rush / Peak / Mid</div>
+    <div class="item"><span class="sw sw-closer"></span>Closer (dish + station)</div>
+    <div class="item"><span class="sw sw-boh"></span>Cook</div>
+    <div class="item"><span class="sw sw-boh-mgr"></span>Cook (Mgr)</div>
+  </div>
+  <div class="group">
+    <span style="font-weight: 600; color: var(--ink);">FOH headcount:</span>
+    <div class="item"><span class="sw sw-hc-0"></span>0</div>
+    <div class="item"><span class="sw sw-hc-1"></span>1</div>
+    <div class="item"><span class="sw sw-hc-2"></span>2</div>
+    <div class="item"><span class="sw sw-hc-3"></span>3</div>
+    <div class="item"><span class="sw sw-hc-4"></span>4+</div>
+  </div>
+</div>
+<div class="legend assumptions">
+  <div class="group">
+    <span style="font-weight: 600; color: var(--ink);">FOH need rules:</span>
+    <div class="item rule">≤10 orders/hr → 1</div>
+    <div class="item rule">11–20 → 2</div>
+    <div class="item rule">21–30 → 3</div>
+    <div class="item rule">31+ → 4</div>
+    <div class="item rule sep">$525+/hr sales → min 4 (override)</div>
+    <div class="item rule sep">≤2 orders/hr → prep only (need 0)</div>
+  </div>
+  <div class="group">
+    <span style="font-weight: 600; color: var(--ink);">Hours:</span>
+    <div class="item rule">Sun–Thu 8a–8p</div>
+    <div class="item rule">Fri–Sat 8a–10p</div>
+    <div class="item rule sep">Opener +1.5hr early</div>
+    <div class="item rule">Dish closer +30 min</div>
+    <div class="item rule">Station closer +60 min</div>
+  </div>
+</div>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="name">
+      <div class="dnum">Mon</div>
+      <div class="dlabel">Monday</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Sales</span><span class="val">$2,683</span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$538</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$336</span></div>
+      <div class="stat"><span class="lbl">Mgr $</span><span class="val">$434</span></div>
+      <div class="stat pct over"><span class="lbl">Labor %</span><span class="val">48.8%</span></div>
+    </div>
+  </div>
+  <div class="day-body">
+    <div class="timeline-axis"><div class="tick">06</div><div class="tick">07</div><div class="tick">08</div><div class="tick">09</div><div class="tick">10</div><div class="tick">11</div><div class="tick">12</div><div class="tick">13</div><div class="tick">14</div><div class="tick">15</div><div class="tick">16</div><div class="tick">17</div><div class="tick">18</div><div class="tick">19</div><div class="tick">20</div><div class="tick">21</div><div class="tick">22</div><div class="tick">23</div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.941176470588235%;width:35.294117647058826%">06:30–12:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:20.588235294117645%;width:35.294117647058826%">09:30–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:50.0%;width:35.294117647058826%">14:30–20:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:38.23529411764706%;width:50.0%">12:30–21:00<div class="brk" style="left:23.52941176470588%;width:5.88235294117647%"></div></div></div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook 1</div><div class="track"><div class="bar b-boh" style="left:5.88235294117647%;width:50.0%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook 2</div><div class="track"><div class="bar b-boh" style="left:5.88235294117647%;width:50.0%">07:00–15:30<div class="brk" style="left:17.647058823529413%;width:5.88235294117647%"></div></div></div></div>
+
+    <div class="heatmaps">
+      <div class="heat-row">
+        <div class="lbl"></div>
+        <div class="cells"><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">06</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">07</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">08</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">09</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">10</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">11</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">12</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">13</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">14</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">15</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">16</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">17</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">18</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">19</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">20</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">21</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">22</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">23</div></div>
+      </div>
+      <div class="heat-row"><div class="lbl"><span class="name">Orders</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814;">—</div><div class="heat-cell" style="background:#e7d4b7;color:#1a1814;">8</div><div class="heat-cell" style="background:#e5d0b0;color:#1a1814;">9</div><div class="heat-cell" style="background:#e0c59f;color:#1a1814;">12</div><div class="heat-cell" style="background:#ddc098;color:#1a1814;">13</div><div class="heat-cell" style="background:#dabb90;color:#1a1814;">15</div><div class="heat-cell" style="background:#dbbc91;color:#1a1814;">15</div><div class="heat-cell" style="background:#ddc198;color:#1a1814;">13</div><div class="heat-cell" style="background:#dcbf95;color:#1a1814;">14</div><div class="heat-cell" style="background:#dec199;color:#1a1814;">13</div><div class="heat-cell" style="background:#dfc49d;color:#1a1814;">12</div><div class="heat-cell" style="background:#ddc198;color:#1a1814;">13</div><div class="heat-cell" style="background:#e0c59f;color:#1a1814;">12</div><div class="heat-cell" style="background:#efe3ce;color:#1a1814;">4</div><div class="heat-cell" style="background:#f1e7d4;color:#1a1814;">3</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div></div></div>
+      <div class="heat-row"><div class="lbl"><span class="name">Sales</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">$2</div><div class="heat-cell" style="background:#e8d5b9;color:#1a1814;">$160</div><div class="heat-cell" style="background:#e5cfaf;color:#1a1814;">$195</div><div class="heat-cell" style="background:#dfc59e;color:#1a1814;">$256</div><div class="heat-cell" style="background:#dfc49d;color:#1a1814;">$262</div><div class="heat-cell" style="background:#dec199;color:#1a1814;">$276</div><div class="heat-cell" style="background:#dfc59f;color:#1a1814;">$255</div><div class="heat-cell" style="background:#e3ccab;color:#1a1814;">$212</div><div class="heat-cell" style="background:#e4ceae;color:#1a1814;">$200</div><div class="heat-cell" style="background:#e4cead;color:#1a1814;">$203</div><div class="heat-cell" style="background:#e6d2b4;color:#1a1814;">$179</div><div class="heat-cell" style="background:#e4ceac;color:#1a1814;">$205</div><div class="heat-cell" style="background:#e6d2b3;color:#1a1814;">$182</div><div class="heat-cell" style="background:#f1e8d6;color:#1a1814;">$56</div><div class="heat-cell" style="background:#f3eada;color:#1a1814;">$41</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div></div></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="name">
+      <div class="dnum">Tue</div>
+      <div class="dlabel">Tuesday</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Sales</span><span class="val">$2,954</span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$538</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$336</span></div>
+      <div class="stat"><span class="lbl">Mgr $</span><span class="val">$434</span></div>
+      <div class="stat pct over"><span class="lbl">Labor %</span><span class="val">44.3%</span></div>
+    </div>
+  </div>
+  <div class="day-body">
+    <div class="timeline-axis"><div class="tick">06</div><div class="tick">07</div><div class="tick">08</div><div class="tick">09</div><div class="tick">10</div><div class="tick">11</div><div class="tick">12</div><div class="tick">13</div><div class="tick">14</div><div class="tick">15</div><div class="tick">16</div><div class="tick">17</div><div class="tick">18</div><div class="tick">19</div><div class="tick">20</div><div class="tick">21</div><div class="tick">22</div><div class="tick">23</div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.941176470588235%;width:35.294117647058826%">06:30–12:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:17.647058823529413%;width:35.294117647058826%">09:00–15:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:50.0%;width:35.294117647058826%">14:30–20:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:38.23529411764706%;width:50.0%">12:30–21:00<div class="brk" style="left:23.52941176470588%;width:5.88235294117647%"></div></div></div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook 1</div><div class="track"><div class="bar b-boh" style="left:5.88235294117647%;width:50.0%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook 2</div><div class="track"><div class="bar b-boh" style="left:5.88235294117647%;width:50.0%">07:00–15:30<div class="brk" style="left:17.647058823529413%;width:5.88235294117647%"></div></div></div></div>
+
+    <div class="heatmaps">
+      <div class="heat-row">
+        <div class="lbl"></div>
+        <div class="cells"><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">06</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">07</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">08</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">09</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">10</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">11</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">12</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">13</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">14</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">15</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">16</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">17</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">18</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">19</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">20</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">21</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">22</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">23</div></div>
+      </div>
+      <div class="heat-row"><div class="lbl"><span class="name">Orders</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814;">—</div><div class="heat-cell" style="background:#e5d0b0;color:#1a1814;">9</div><div class="heat-cell" style="background:#e3cba8;color:#1a1814;">11</div><div class="heat-cell" style="background:#dcbf95;color:#1a1814;">14</div><div class="heat-cell" style="background:#d9b98c;color:#1a1814;">15</div><div class="heat-cell" style="background:#d4b282;color:#1a1814;">17</div><div class="heat-cell" style="background:#d5b384;color:#1a1814;">17</div><div class="heat-cell" style="background:#daba8d;color:#1a1814;">15</div><div class="heat-cell" style="background:#d8b789;color:#1a1814;">16</div><div class="heat-cell" style="background:#daba8e;color:#1a1814;">15</div><div class="heat-cell" style="background:#dcbd93;color:#1a1814;">14</div><div class="heat-cell" style="background:#daba8d;color:#1a1814;">15</div><div class="heat-cell" style="background:#dcbf95;color:#1a1814;">14</div><div class="heat-cell" style="background:#eee1cb;color:#1a1814;">5</div><div class="heat-cell" style="background:#f0e5d2;color:#1a1814;">3</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div></div></div>
+      <div class="heat-row"><div class="lbl"><span class="name">Sales</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">$3</div><div class="heat-cell" style="background:#e7d3b5;color:#1a1814;">$176</div><div class="heat-cell" style="background:#e3ccaa;color:#1a1814;">$215</div><div class="heat-cell" style="background:#ddc097;color:#1a1814;">$282</div><div class="heat-cell" style="background:#dcbf95;color:#1a1814;">$288</div><div class="heat-cell" style="background:#dbbc91;color:#1a1814;">$303</div><div class="heat-cell" style="background:#ddc097;color:#1a1814;">$281</div><div class="heat-cell" style="background:#e1c9a5;color:#1a1814;">$233</div><div class="heat-cell" style="background:#e3cba8;color:#1a1814;">$220</div><div class="heat-cell" style="background:#e2caa7;color:#1a1814;">$224</div><div class="heat-cell" style="background:#e5cfaf;color:#1a1814;">$197</div><div class="heat-cell" style="background:#e2caa7;color:#1a1814;">$226</div><div class="heat-cell" style="background:#e4ceae;color:#1a1814;">$200</div><div class="heat-cell" style="background:#f1e7d4;color:#1a1814;">$61</div><div class="heat-cell" style="background:#f2ead9;color:#1a1814;">$45</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div></div></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="name">
+      <div class="dnum">Wed</div>
+      <div class="dlabel">Wednesday</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Sales</span><span class="val">$3,217</span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$538</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$168</span></div>
+      <div class="stat"><span class="lbl">Mgr $</span><span class="val">$434</span></div>
+      <div class="stat pct over"><span class="lbl">Labor %</span><span class="val">35.4%</span></div>
+    </div>
+  </div>
+  <div class="day-body">
+    <div class="timeline-axis"><div class="tick">06</div><div class="tick">07</div><div class="tick">08</div><div class="tick">09</div><div class="tick">10</div><div class="tick">11</div><div class="tick">12</div><div class="tick">13</div><div class="tick">14</div><div class="tick">15</div><div class="tick">16</div><div class="tick">17</div><div class="tick">18</div><div class="tick">19</div><div class="tick">20</div><div class="tick">21</div><div class="tick">22</div><div class="tick">23</div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.941176470588235%;width:35.294117647058826%">06:30–12:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:17.647058823529413%;width:35.294117647058826%">09:00–15:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:50.0%;width:35.294117647058826%">14:30–20:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:38.23529411764706%;width:50.0%">12:30–21:00<div class="brk" style="left:23.52941176470588%;width:5.88235294117647%"></div></div></div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-boh-mgr"></span>Cook (Mgr)</div><div class="track"><div class="bar b-boh-mgr" style="left:5.88235294117647%;width:50.0%">07:00–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook</div><div class="track"><div class="bar b-boh" style="left:5.88235294117647%;width:50.0%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+
+    <div class="heatmaps">
+      <div class="heat-row">
+        <div class="lbl"></div>
+        <div class="cells"><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">06</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">07</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">08</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">09</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">10</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">11</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">12</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">13</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">14</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">15</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">16</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">17</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">18</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">19</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">20</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">21</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">22</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">23</div></div>
+      </div>
+      <div class="heat-row"><div class="lbl"><span class="name">Orders</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814;">—</div><div class="heat-cell" style="background:#e4ceae;color:#1a1814;">10</div><div class="heat-cell" style="background:#e2c9a5;color:#1a1814;">11</div><div class="heat-cell" style="background:#dbbc91;color:#1a1814;">15</div><div class="heat-cell" style="background:#d7b688;color:#1a1814;">16</div><div class="heat-cell" style="background:#d1ae7c;color:#1a1814;">18</div><div class="heat-cell" style="background:#d2af7e;color:#1a1814;">17</div><div class="heat-cell" style="background:#d8b789;color:#1a1814;">16</div><div class="heat-cell" style="background:#d5b484;color:#1a1814;">17</div><div class="heat-cell" style="background:#d8b789;color:#1a1814;">16</div><div class="heat-cell" style="background:#dabb8f;color:#1a1814;">15</div><div class="heat-cell" style="background:#d8b789;color:#1a1814;">16</div><div class="heat-cell" style="background:#dbbc91;color:#1a1814;">15</div><div class="heat-cell" style="background:#ede0c9;color:#1a1814;">5</div><div class="heat-cell" style="background:#f0e4d1;color:#1a1814;">4</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div></div></div>
+      <div class="heat-row"><div class="lbl"><span class="name">Sales</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">$3</div><div class="heat-cell" style="background:#e5d0b0;color:#1a1814;">$192</div><div class="heat-cell" style="background:#e1c8a4;color:#1a1814;">$234</div><div class="heat-cell" style="background:#dbbc90;color:#1a1814;">$307</div><div class="heat-cell" style="background:#daba8e;color:#1a1814;">$314</div><div class="heat-cell" style="background:#d9b88a;color:#1a1814;">$331</div><div class="heat-cell" style="background:#dbbc91;color:#1a1814;">$306</div><div class="heat-cell" style="background:#dfc59f;color:#1a1814;">$254</div><div class="heat-cell" style="background:#e1c7a3;color:#1a1814;">$240</div><div class="heat-cell" style="background:#e0c7a2;color:#1a1814;">$244</div><div class="heat-cell" style="background:#e3ccaa;color:#1a1814;">$215</div><div class="heat-cell" style="background:#e0c6a1;color:#1a1814;">$246</div><div class="heat-cell" style="background:#e3cba9;color:#1a1814;">$218</div><div class="heat-cell" style="background:#f0e6d3;color:#1a1814;">$67</div><div class="heat-cell" style="background:#f2e9d8;color:#1a1814;">$49</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div></div></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="name">
+      <div class="dnum">Thu</div>
+      <div class="dlabel">Thursday</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Sales</span><span class="val">$3,028</span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$538</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$168</span></div>
+      <div class="stat"><span class="lbl">Mgr $</span><span class="val">$434</span></div>
+      <div class="stat pct over"><span class="lbl">Labor %</span><span class="val">37.6%</span></div>
+    </div>
+  </div>
+  <div class="day-body">
+    <div class="timeline-axis"><div class="tick">06</div><div class="tick">07</div><div class="tick">08</div><div class="tick">09</div><div class="tick">10</div><div class="tick">11</div><div class="tick">12</div><div class="tick">13</div><div class="tick">14</div><div class="tick">15</div><div class="tick">16</div><div class="tick">17</div><div class="tick">18</div><div class="tick">19</div><div class="tick">20</div><div class="tick">21</div><div class="tick">22</div><div class="tick">23</div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.941176470588235%;width:35.294117647058826%">06:30–12:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:17.647058823529413%;width:35.294117647058826%">09:00–15:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:50.0%;width:35.294117647058826%">14:30–20:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:38.23529411764706%;width:50.0%">12:30–21:00<div class="brk" style="left:23.52941176470588%;width:5.88235294117647%"></div></div></div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-boh-mgr"></span>Cook (Mgr)</div><div class="track"><div class="bar b-boh-mgr" style="left:5.88235294117647%;width:50.0%">07:00–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook</div><div class="track"><div class="bar b-boh" style="left:5.88235294117647%;width:50.0%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+
+    <div class="heatmaps">
+      <div class="heat-row">
+        <div class="lbl"></div>
+        <div class="cells"><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">06</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">07</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">08</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">09</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">10</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">11</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">12</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">13</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">14</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">15</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">16</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">17</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">18</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">19</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">20</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">21</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">22</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">23</div></div>
+      </div>
+      <div class="heat-row"><div class="lbl"><span class="name">Orders</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814;">—</div><div class="heat-cell" style="background:#e5d0b0;color:#1a1814;">9</div><div class="heat-cell" style="background:#e2cba8;color:#1a1814;">11</div><div class="heat-cell" style="background:#dcbe94;color:#1a1814;">14</div><div class="heat-cell" style="background:#d9b98b;color:#1a1814;">16</div><div class="heat-cell" style="background:#d4b181;color:#1a1814;">17</div><div class="heat-cell" style="background:#d5b383;color:#1a1814;">17</div><div class="heat-cell" style="background:#d9b98c;color:#1a1814;">15</div><div class="heat-cell" style="background:#d8b788;color:#1a1814;">16</div><div class="heat-cell" style="background:#daba8d;color:#1a1814;">15</div><div class="heat-cell" style="background:#dbbd92;color:#1a1814;">14</div><div class="heat-cell" style="background:#d9b98c;color:#1a1814;">15</div><div class="heat-cell" style="background:#dcbe94;color:#1a1814;">14</div><div class="heat-cell" style="background:#eee1cb;color:#1a1814;">5</div><div class="heat-cell" style="background:#f0e5d1;color:#1a1814;">3</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div></div></div>
+      <div class="heat-row"><div class="lbl"><span class="name">Sales</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">$3</div><div class="heat-cell" style="background:#e6d2b3;color:#1a1814;">$180</div><div class="heat-cell" style="background:#e3cba8;color:#1a1814;">$220</div><div class="heat-cell" style="background:#dcbf95;color:#1a1814;">$289</div><div class="heat-cell" style="background:#dcbe93;color:#1a1814;">$295</div><div class="heat-cell" style="background:#dabb8f;color:#1a1814;">$311</div><div class="heat-cell" style="background:#dcbf96;color:#1a1814;">$288</div><div class="heat-cell" style="background:#e1c8a3;color:#1a1814;">$239</div><div class="heat-cell" style="background:#e2caa7;color:#1a1814;">$226</div><div class="heat-cell" style="background:#e2c9a6;color:#1a1814;">$230</div><div class="heat-cell" style="background:#e4cead;color:#1a1814;">$202</div><div class="heat-cell" style="background:#e2c9a5;color:#1a1814;">$231</div><div class="heat-cell" style="background:#e4cdac;color:#1a1814;">$205</div><div class="heat-cell" style="background:#f1e6d4;color:#1a1814;">$63</div><div class="heat-cell" style="background:#f2e9d9;color:#1a1814;">$46</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div></div></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="name">
+      <div class="dnum">Fri</div>
+      <div class="dlabel">Friday</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Sales</span><span class="val">$4,658</span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$733</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$168</span></div>
+      <div class="stat"><span class="lbl">Mgr $</span><span class="val">$434</span></div>
+      <div class="stat pct ok"><span class="lbl">Labor %</span><span class="val">28.7%</span></div>
+    </div>
+  </div>
+  <div class="day-body">
+    <div class="timeline-axis"><div class="tick">06</div><div class="tick">07</div><div class="tick">08</div><div class="tick">09</div><div class="tick">10</div><div class="tick">11</div><div class="tick">12</div><div class="tick">13</div><div class="tick">14</div><div class="tick">15</div><div class="tick">16</div><div class="tick">17</div><div class="tick">18</div><div class="tick">19</div><div class="tick">20</div><div class="tick">21</div><div class="tick">22</div><div class="tick">23</div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.941176470588235%;width:47.05882352941177%">06:30–14:30<div class="brk" style="left:6.25%;width:6.25%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:11.76470588235294%;width:35.29411764705882%">08:00–14:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Mid-1</div><div class="track"><div class="bar b-front" style="left:23.52941176470588%;width:50.0%">10:00–18:30<div class="brk" style="left:52.94117647058824%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:47.05882352941176%;width:50.00000000000001%">14:00–22:30<div class="brk" style="left:35.294117647058826%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:52.94117647058824%;width:47.05882352941176%">15:00–23:00<div class="brk" style="left:31.25%;width:6.25%"></div></div></div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-boh-mgr"></span>Cook (Mgr)</div><div class="track"><div class="bar b-boh-mgr" style="left:5.88235294117647%;width:50.0%">07:00–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook</div><div class="track"><div class="bar b-boh" style="left:5.88235294117647%;width:50.0%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+
+    <div class="heatmaps">
+      <div class="heat-row">
+        <div class="lbl"></div>
+        <div class="cells"><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">06</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">07</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">08</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">09</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">10</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">11</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">12</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">13</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">14</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">15</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">16</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">17</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">18</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">19</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">20</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">21</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">22</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">23</div></div>
+      </div>
+      <div class="heat-row"><div class="lbl"><span class="name">Orders</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f0e3;color:#1a1814;">—</div><div class="heat-cell" style="background:#ddc096;color:#1a1814;">14</div><div class="heat-cell" style="background:#d9b88a;color:#1a1814;">16</div><div class="heat-cell" style="background:#c6a069;color:#1a1814;">21</div><div class="heat-cell" style="background:#be955a;color:#1a1814;">23</div><div class="heat-cell" style="background:#b5894a;color:#ffffff;">25</div><div class="heat-cell" style="background:#b78b4d;color:#ffffff;">25</div><div class="heat-cell" style="background:#bf965c;color:#1a1814;">23</div><div class="heat-cell" style="background:#bb9155;color:#1a1814;">24</div><div class="heat-cell" style="background:#bf975d;color:#1a1814;">22</div><div class="heat-cell" style="background:#c49d65;color:#1a1814;">21</div><div class="heat-cell" style="background:#bf965c;color:#1a1814;">23</div><div class="heat-cell" style="background:#c6a069;color:#1a1814;">21</div><div class="heat-cell" style="background:#ead8be;color:#1a1814;">7</div><div class="heat-cell" style="background:#eddfc8;color:#1a1814;">5</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div></div></div>
+      <div class="heat-row"><div class="lbl"><span class="name">Sales</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814;">$4</div><div class="heat-cell" style="background:#ddc198;color:#1a1814;">$277</div><div class="heat-cell" style="background:#d7b687;color:#1a1814;">$339</div><div class="heat-cell" style="background:#c49d65;color:#1a1814;">$445</div><div class="heat-cell" style="background:#c29a61;color:#1a1814;">$454</div><div class="heat-cell" style="background:#be955a;color:#1a1814;">$479</div><div class="heat-cell" style="background:#c49d65;color:#1a1814;">$442</div><div class="heat-cell" style="background:#d2af7e;color:#1a1814;">$367</div><div class="heat-cell" style="background:#d6b484;color:#1a1814;">$347</div><div class="heat-cell" style="background:#d4b282;color:#1a1814;">$353</div><div class="heat-cell" style="background:#dabb8f;color:#1a1814;">$311</div><div class="heat-cell" style="background:#d4b281;color:#1a1814;">$356</div><div class="heat-cell" style="background:#daba8e;color:#1a1814;">$316</div><div class="heat-cell" style="background:#eee1cb;color:#1a1814;">$97</div><div class="heat-cell" style="background:#f0e5d2;color:#1a1814;">$71</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div></div></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="name">
+      <div class="dnum">Sat</div>
+      <div class="dlabel">Saturday</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Sales</span><span class="val">$6,439</span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$1,006</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$168</span></div>
+      <div class="stat"><span class="lbl">Mgr $</span><span class="val">$434</span></div>
+      <div class="stat pct under"><span class="lbl">Labor %</span><span class="val">25.0%</span></div>
+    </div>
+  </div>
+  <div class="day-body">
+    <div class="timeline-axis"><div class="tick">06</div><div class="tick">07</div><div class="tick">08</div><div class="tick">09</div><div class="tick">10</div><div class="tick">11</div><div class="tick">12</div><div class="tick">13</div><div class="tick">14</div><div class="tick">15</div><div class="tick">16</div><div class="tick">17</div><div class="tick">18</div><div class="tick">19</div><div class="tick">20</div><div class="tick">21</div><div class="tick">22</div><div class="tick">23</div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.941176470588235%;width:47.05882352941177%">06:30–14:30<div class="brk" style="left:6.25%;width:6.25%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper-1</div><div class="track"><div class="bar b-front" style="left:11.76470588235294%;width:35.29411764705882%">08:00–14:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Peak-helper</div><div class="track"><div class="bar b-front" style="left:20.588235294117645%;width:35.294117647058826%">09:30–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Mid-AM</div><div class="track"><div class="bar b-front" style="left:14.705882352941178%;width:50.0%">08:30–17:00<div class="brk" style="left:5.88235294117647%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Mid</div><div class="track"><div class="bar b-front" style="left:32.35294117647059%;width:49.99999999999999%">11:30–20:00<div class="brk" style="left:52.94117647058824%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:50.0%;width:47.05882352941177%">14:30–22:30<div class="brk" style="left:25.0%;width:6.25%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:52.94117647058824%;width:47.05882352941176%">15:00–23:00<div class="brk" style="left:6.25%;width:6.25%"></div></div></div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-boh-mgr"></span>Cook (Mgr)</div><div class="track"><div class="bar b-boh-mgr" style="left:5.88235294117647%;width:50.0%">07:00–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook</div><div class="track"><div class="bar b-boh" style="left:5.88235294117647%;width:50.0%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+
+    <div class="heatmaps">
+      <div class="heat-row">
+        <div class="lbl"></div>
+        <div class="cells"><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">06</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">07</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">08</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">09</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">10</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">11</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">12</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">13</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">14</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">15</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">16</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">17</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">18</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">19</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">20</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">21</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">22</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">23</div></div>
+      </div>
+      <div class="heat-row"><div class="lbl"><span class="name">Orders</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f0e3;color:#1a1814;">—</div><div class="heat-cell" style="background:#d4b181;color:#1a1814;">17</div><div class="heat-cell" style="background:#caa56f;color:#1a1814;">20</div><div class="heat-cell" style="background:#b28646;color:#ffffff;">26</div><div class="heat-cell" style="background:#a87833;color:#ffffff;">29</div><div class="heat-cell" style="background:#9d6a1f;color:#ffffff;">32</div><div class="heat-cell" style="background:#9f6c22;color:#ffffff;">31</div><div class="heat-cell" style="background:#a97934;color:#ffffff;">28</div><div class="heat-cell" style="background:#a4742c;color:#ffffff;">30</div><div class="heat-cell" style="background:#aa7b36;color:#ffffff;">28</div><div class="heat-cell" style="background:#b08341;color:#ffffff;">27</div><div class="heat-cell" style="background:#a97a35;color:#ffffff;">28</div><div class="heat-cell" style="background:#b28646;color:#ffffff;">26</div><div class="heat-cell" style="background:#e6d2b4;color:#1a1814;">9</div><div class="heat-cell" style="background:#eadac0;color:#1a1814;">6</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div></div></div>
+      <div class="heat-row"><div class="lbl"><span class="name">Sales</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814;">$6</div><div class="heat-cell" style="background:#cfab78;color:#1a1814;">$383</div><div class="heat-cell" style="background:#bf975d;color:#1a1814;">$469</div><div class="heat-cell" style="background:#a5752e;color:#ffffff;">$615</div><div class="heat-cell" style="background:#a37129;color:#ffffff;">$628</div><div class="heat-cell" style="background:#9d6a1f;color:#ffffff;">$661</div><div class="heat-cell" style="background:#a6752f;color:#ffffff;">$611</div><div class="heat-cell" style="background:#b88e50;color:#ffffff;">$508</div><div class="heat-cell" style="background:#bd9459;color:#1a1814;">$480</div><div class="heat-cell" style="background:#bc9257;color:#1a1814;">$488</div><div class="heat-cell" style="background:#c7a06a;color:#1a1814;">$429</div><div class="heat-cell" style="background:#bb9255;color:#1a1814;">$492</div><div class="heat-cell" style="background:#c59f67;color:#1a1814;">$437</div><div class="heat-cell" style="background:#eadac0;color:#1a1814;">$134</div><div class="heat-cell" style="background:#eee0ca;color:#1a1814;">$98</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#243617;color:#ffffff;">5</div><div class="heat-cell" style="background:#243617;color:#ffffff;">5</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div></div></div>
+    </div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="name">
+      <div class="dnum">Sun</div>
+      <div class="dlabel">Sunday</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Sales</span><span class="val">$5,808</span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$789</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$168</span></div>
+      <div class="stat"><span class="lbl">Mgr $</span><span class="val">$434</span></div>
+      <div class="stat pct under"><span class="lbl">Labor %</span><span class="val">24.0%</span></div>
+    </div>
+  </div>
+  <div class="day-body">
+    <div class="timeline-axis"><div class="tick">06</div><div class="tick">07</div><div class="tick">08</div><div class="tick">09</div><div class="tick">10</div><div class="tick">11</div><div class="tick">12</div><div class="tick">13</div><div class="tick">14</div><div class="tick">15</div><div class="tick">16</div><div class="tick">17</div><div class="tick">18</div><div class="tick">19</div><div class="tick">20</div><div class="tick">21</div><div class="tick">22</div><div class="tick">23</div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.941176470588235%;width:47.05882352941177%">06:30–14:30<div class="brk" style="left:6.25%;width:6.25%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:11.76470588235294%;width:35.29411764705882%">08:00–14:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Peak-helper</div><div class="track"><div class="bar b-front" style="left:20.588235294117645%;width:35.294117647058826%">09:30–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Mid</div><div class="track"><div class="bar b-front" style="left:29.411764705882355%;width:49.99999999999999%">11:00–19:30<div class="brk" style="left:35.294117647058826%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:50.0%;width:35.294117647058826%">14:30–20:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:47.05882352941176%;width:41.1764705882353%">14:00–21:00<div class="brk" style="left:7.142857142857142%;width:7.142857142857142%"></div></div></div></div>
+    <div class="shift-row"><div class="lbl"><span class="dot dot-boh-mgr"></span>Cook (Mgr)</div><div class="track"><div class="bar b-boh-mgr" style="left:5.88235294117647%;width:50.0%">07:00–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook</div><div class="track"><div class="bar b-boh" style="left:5.88235294117647%;width:50.0%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+
+    <div class="heatmaps">
+      <div class="heat-row">
+        <div class="lbl"></div>
+        <div class="cells"><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">06</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">07</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">08</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">09</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">10</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">11</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">12</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">13</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">14</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">15</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">16</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">17</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">18</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">19</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">20</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">21</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">22</div><div class="heat-cell" style="background:transparent;color:var(--ink-soft);font-weight:500;">23</div></div>
+      </div>
+      <div class="heat-row"><div class="lbl"><span class="name">Orders</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f0e3;color:#1a1814;">—</div><div class="heat-cell" style="background:#dbbc90;color:#1a1814;">15</div><div class="heat-cell" style="background:#d4b282;color:#1a1814;">17</div><div class="heat-cell" style="background:#c0985e;color:#1a1814;">22</div><div class="heat-cell" style="background:#b78c4e;color:#ffffff;">25</div><div class="heat-cell" style="background:#ad7f3d;color:#ffffff;">27</div><div class="heat-cell" style="background:#af8240;color:#ffffff;">27</div><div class="heat-cell" style="background:#b88d4f;color:#ffffff;">24</div><div class="heat-cell" style="background:#b48848;color:#ffffff;">25</div><div class="heat-cell" style="background:#b98e51;color:#ffffff;">24</div><div class="heat-cell" style="background:#be955a;color:#1a1814;">23</div><div class="heat-cell" style="background:#b88d50;color:#ffffff;">24</div><div class="heat-cell" style="background:#c0985e;color:#1a1814;">22</div><div class="heat-cell" style="background:#e9d6bb;color:#1a1814;">7</div><div class="heat-cell" style="background:#ecddc5;color:#1a1814;">6</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div></div></div>
+      <div class="heat-row"><div class="lbl"><span class="name">Sales</span><span>/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814;">$5</div><div class="heat-cell" style="background:#d6b485;color:#1a1814;">$346</div><div class="heat-cell" style="background:#c8a26c;color:#1a1814;">$423</div><div class="heat-cell" style="background:#b08341;color:#ffffff;">$554</div><div class="heat-cell" style="background:#ae803d;color:#ffffff;">$567</div><div class="heat-cell" style="background:#a87933;color:#ffffff;">$597</div><div class="heat-cell" style="background:#b08342;color:#ffffff;">$552</div><div class="heat-cell" style="background:#c19960;color:#1a1814;">$458</div><div class="heat-cell" style="background:#c69f68;color:#1a1814;">$433</div><div class="heat-cell" style="background:#c59e66;color:#1a1814;">$440</div><div class="heat-cell" style="background:#ceaa77;color:#1a1814;">$387</div><div class="heat-cell" style="background:#c49d65;color:#1a1814;">$444</div><div class="heat-cell" style="background:#cda975;color:#1a1814;">$394</div><div class="heat-cell" style="background:#ecdcc4;color:#1a1814;">$121</div><div class="heat-cell" style="background:#eee2cd;color:#1a1814;">$88</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814;">—</div><div class="heat-cell" style="background:#f7f2e6;color:#1a1814;">—</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">0</div></div></div>
+      <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span>people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#3d5827;color:#ffffff;">4</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#5d7a3d;color:#ffffff;">3</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814;">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814;">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814;">—</div></div></div>
+    </div>
+  </div>
+</section>
+
+
+</div><!-- /tab-current -->
+
+<div id="tab-projection" class="tab-panel" role="tabpanel">
+
+<header class="masthead">
+  <h1>Knotted AD <em>— Forward Projection</em></h1>
+  <div class="sub">Projected upcoming week &middot; Mon May 25 – Sun May 31, 2026</div>
+</header>
+
+<section class="projection-summary">
+  <div class="proj-block proj-factors">
+    <div class="proj-block-title">Projected Weekly Sales — Driver factors</div>
+    <div class="proj-sales-row">
+      <div class="proj-sales-amount">$26,966</div>
+      <div class="proj-sales-vs-base">
+        Baseline (8-wk avg): $28,787
+        &nbsp; · &nbsp;
+        <span class="delta-down">
+          -1,821 (-6.3%)
+        </span>
+      </div>
+    </div>
+    <ul class="proj-factor-list">
+<li>Recency weighting (last 2 weeks vs prior 6): Tue -13%, Thu -3%, Fri -10%, Sat -7%, Sun -3%</li>
+<li>Mon 5/25: Memorial Day AM (people off work) (+10%), Memorial Day midday (some travel/BBQ) (-5%), Memorial Day PM (BBQ/travel) (-20%)</li>
+<li>Tue 5/26: AM shower (49% rain) (-12%), Clearing midday (-5%)</li>
+    </ul>
+  </div>
+
+  <div class="proj-block proj-issues">
+    <div class="proj-block-title">Potential issues &amp; suggested fixes</div>
+    <ul class="proj-issue-list">
+<li class="sev-issue"><span class="when">Mon 5/25 09:00</span> &middot; need <strong>2</strong>, scheduled <strong>1</strong> &middot; <span class="fix">Consider opener starting 30 min earlier</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="goal-banner trim-over">
+  <div class="goal-left">
+    <div class="goal-arrow">↓</div>
+    <div>
+      <div class="goal-label">Over goal — trim needed</div>
+      <div class="goal-detail">Projected 34.2% &middot; Target 28% &middot; Delta 6.2 pp</div>
+    </div>
+  </div>
+  <div class="goal-right">
+    <div class="goal-amount">$1,679<span class="goal-unit">/wk</span></div>
+    <div class="goal-annual">≈ 84 labor hours/wk (at $20/hr assumed blended)</div>
+  </div>
+</section>
+
+<section class="summary">
+  <div class="col">
+    <div class="k">Projected Weekly Sales</div>
+    <div class="v">$26,966</div>
+    <div class="meta">Mon May 25 – Sun May 31, 2026</div>
+  </div>
+  <div class="col">
+    <div class="k">FOH Hourly</div>
+    <div class="v">$4,680 <span class="v-pct">17.4%</span></div>
+    <div class="meta">231.5 paid hrs · 34 shifts</div>
+  </div>
+  <div class="col">
+    <div class="k">BOH Hourly</div>
+    <div class="v">$1,512 <span class="v-pct">5.6%</span></div>
+    <div class="meta">72.0 paid hrs · 14 shifts</div>
+  </div>
+  <div class="col">
+    <div class="k">Manager Salaries</div>
+    <div class="v">$3,038 <span class="v-pct">11.3%</span></div>
+    <div class="meta">$158K/yr combined</div>
+  </div>
+  <div class="col">
+    <div class="k">Total Labor</div>
+    <div class="v"><span class="pct over">34.2%</span> <span class="v-sub">$9,230</span></div>
+    <div class="meta">over by 6.2pp of 28%</div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="day-title">
+      <h2>Mon <span class="dlabel">Monday 5/25</span></h2>
+      <span class="day-chip">Memorial Day AM (people off work) (+10%), Memorial Day midday (some travel/BBQ) (-5%), Memorial Day PM (BBQ/travel) (-20%)</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Adjusted sales</span><span class="val">$2,465</span></div>
+      <div class="stat"><span class="lbl">vs Baseline</span><span class="val delta-down">-218<span class="pct-small">(-8.1%)</span></span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$538</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$336</span></div>
+      <div class="stat pct over"><span class="lbl">Labor %</span><span class="val">35.5%</span></div>
+    </div>
+  </div>
+  <div class="shifts">
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.7777777777777777%;width:33.33333333333333%">06:30–12:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:19.444444444444446%;width:33.33333333333333%">09:30–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:47.22222222222222%;width:33.333333333333336%">14:30–20:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:36.11111111111111%;width:47.222222222222236%">12:30–21:00<div class="brk" style="left:52.94117647058824%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook 1</div><div class="track"><div class="bar b-boh" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook 2</div><div class="track"><div class="bar b-boh" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30<div class="brk" style="left:17.647058823529413%;width:5.88235294117647%"></div></div></div></div>
+  </div>
+  <div class="heatmaps">
+    <div class="heat-row">
+      <div class="lbl"></div>
+      <div class="cells"><div class="heat-cell axis">06</div><div class="heat-cell axis">07</div><div class="heat-cell axis">08</div><div class="heat-cell axis">09</div><div class="heat-cell axis">10</div><div class="heat-cell axis">11</div><div class="heat-cell axis">12</div><div class="heat-cell axis">13</div><div class="heat-cell axis">14</div><div class="heat-cell axis">15</div><div class="heat-cell axis">16</div><div class="heat-cell axis">17</div><div class="heat-cell axis">18</div><div class="heat-cell axis">19</div><div class="heat-cell axis">20</div><div class="heat-cell axis">21</div><div class="heat-cell axis">22</div><div class="heat-cell axis">23</div></div>
+    </div>
+    <div class="heat-row"><div class="lbl"><span class="name">orders</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">–</div><div class="heat-cell" style="background:#f5f0e2;color:#1a1814">0</div><div class="heat-cell" style="background:#c9a46f;color:#1a1814">9</div><div class="heat-cell pinch" style="background:#be955a;color:#1a1814">10</div><div class="heat-cell" style="background:#a3722a;color:#1a1814">13</div><div class="heat-cell" style="background:#a87833;color:#1a1814">13</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">14</div><div class="heat-cell" style="background:#9f6c22;color:#1a1814">14</div><div class="heat-cell" style="background:#ba9053;color:#1a1814">11</div><div class="heat-cell" style="background:#b68b4c;color:#1a1814">11</div><div class="heat-cell" style="background:#bb9154;color:#1a1814">11</div><div class="heat-cell" style="background:#c0975d;color:#1a1814">10</div><div class="heat-cell" style="background:#ba9053;color:#1a1814">11</div><div class="heat-cell" style="background:#c29a61;color:#1a1814">10</div><div class="heat-cell" style="background:#e9d7bb;color:#1a1814">3</div><div class="heat-cell" style="background:#ecdec6;color:#1a1814">2</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">0</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">0</div></div></div>
+    <div class="heat-row"><div class="lbl"><span class="name">sales</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div><div class="heat-cell" style="background:#f6f0e4;color:#1a1814">$3</div><div class="heat-cell" style="background:#caa46f;color:#1a1814">$177</div><div class="heat-cell pinch" style="background:#b98f51;color:#1a1814">$216</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">$283</div><div class="heat-cell" style="background:#ab7c38;color:#1a1814">$250</div><div class="heat-cell" style="background:#a5752e;color:#1a1814">$263</div><div class="heat-cell" style="background:#ad7f3d;color:#1a1814">$244</div><div class="heat-cell" style="background:#cca874;color:#1a1814">$170</div><div class="heat-cell" style="background:#d0ad7b;color:#1a1814">$161</div><div class="heat-cell" style="background:#cfab79;color:#1a1814">$164</div><div class="heat-cell" style="background:#d8b688;color:#1a1814">$144</div><div class="heat-cell" style="background:#cfab78;color:#1a1814">$165</div><div class="heat-cell" style="background:#d7b586;color:#1a1814">$146</div><div class="heat-cell" style="background:#eddfc8;color:#1a1814">$45</div><div class="heat-cell" style="background:#f0e4d0;color:#1a1814">$33</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">$0</div><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell pinch" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell pinch" style="background:#cfddb7;color:#7a2818">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#7a2818">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="day-title">
+      <h2>Tue <span class="dlabel">Tuesday 5/26</span></h2>
+      <span class="day-chip">AM shower (49% rain) (-12%), Clearing midday (-5%)</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Adjusted sales</span><span class="val">$2,458</span></div>
+      <div class="stat"><span class="lbl">vs Baseline</span><span class="val delta-down">-496<span class="pct-small">(-16.8%)</span></span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$538</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$336</span></div>
+      <div class="stat pct over"><span class="lbl">Labor %</span><span class="val">35.6%</span></div>
+    </div>
+  </div>
+  <div class="shifts">
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.7777777777777777%;width:33.33333333333333%">06:30–12:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:16.666666666666664%;width:33.333333333333336%">09:00–15:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:47.22222222222222%;width:33.333333333333336%">14:30–20:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:36.11111111111111%;width:47.222222222222236%">12:30–21:00<div class="brk" style="left:23.52941176470588%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook 1</div><div class="track"><div class="bar b-boh" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook 2</div><div class="track"><div class="bar b-boh" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30<div class="brk" style="left:17.647058823529413%;width:5.88235294117647%"></div></div></div></div>
+  </div>
+  <div class="heatmaps">
+    <div class="heat-row">
+      <div class="lbl"></div>
+      <div class="cells"><div class="heat-cell axis">06</div><div class="heat-cell axis">07</div><div class="heat-cell axis">08</div><div class="heat-cell axis">09</div><div class="heat-cell axis">10</div><div class="heat-cell axis">11</div><div class="heat-cell axis">12</div><div class="heat-cell axis">13</div><div class="heat-cell axis">14</div><div class="heat-cell axis">15</div><div class="heat-cell axis">16</div><div class="heat-cell axis">17</div><div class="heat-cell axis">18</div><div class="heat-cell axis">19</div><div class="heat-cell axis">20</div><div class="heat-cell axis">21</div><div class="heat-cell axis">22</div><div class="heat-cell axis">23</div></div>
+    </div>
+    <div class="heat-row"><div class="lbl"><span class="name">orders</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">–</div><div class="heat-cell" style="background:#f6f0e3;color:#1a1814">0</div><div class="heat-cell" style="background:#d8b789;color:#1a1814">7</div><div class="heat-cell" style="background:#cfac79;color:#1a1814">8</div><div class="heat-cell" style="background:#ba8f52;color:#1a1814">11</div><div class="heat-cell" style="background:#a87833;color:#1a1814">13</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">14</div><div class="heat-cell" style="background:#9f6c22;color:#1a1814">14</div><div class="heat-cell" style="background:#a3722a;color:#1a1814">13</div><div class="heat-cell" style="background:#9e6c22;color:#1a1814">14</div><div class="heat-cell" style="background:#a4732c;color:#1a1814">13</div><div class="heat-cell" style="background:#aa7c37;color:#1a1814">12</div><div class="heat-cell" style="background:#a3722b;color:#1a1814">13</div><div class="heat-cell" style="background:#ad7f3c;color:#1a1814">12</div><div class="heat-cell" style="background:#e5d0b1;color:#1a1814">4</div><div class="heat-cell" style="background:#ead9be;color:#1a1814">3</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">0</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">0</div></div></div>
+    <div class="heat-row"><div class="lbl"><span class="name">sales</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">$2</div><div class="heat-cell" style="background:#d4b282;color:#1a1814">$134</div><div class="heat-cell" style="background:#c69f68;color:#1a1814">$164</div><div class="heat-cell" style="background:#ad7f3c;color:#1a1814">$216</div><div class="heat-cell" style="background:#a37129;color:#1a1814">$238</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">$250</div><div class="heat-cell" style="background:#a6752f;color:#1a1814">$232</div><div class="heat-cell" style="background:#b48748;color:#1a1814">$202</div><div class="heat-cell" style="background:#b98e51;color:#1a1814">$191</div><div class="heat-cell" style="background:#b78c4e;color:#1a1814">$195</div><div class="heat-cell" style="background:#c29b62;color:#1a1814">$171</div><div class="heat-cell" style="background:#b78b4d;color:#1a1814">$196</div><div class="heat-cell" style="background:#c19960;color:#1a1814">$174</div><div class="heat-cell" style="background:#ead9be;color:#1a1814">$53</div><div class="heat-cell" style="background:#eddfc9;color:#1a1814">$39</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">$0</div><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#7a2818">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="day-title">
+      <h2>Wed <span class="dlabel">Wednesday 5/27</span></h2>
+      
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Adjusted sales</span><span class="val">$3,280</span></div>
+      <div class="stat"><span class="lbl">vs Baseline</span><span class="val delta-up">+62<span class="pct-small">(+1.9%)</span></span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$538</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$168</span></div>
+      <div class="stat pct under"><span class="lbl">Labor %</span><span class="val">21.5%</span></div>
+    </div>
+  </div>
+  <div class="shifts">
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.7777777777777777%;width:33.33333333333333%">06:30–12:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:16.666666666666664%;width:33.333333333333336%">09:00–15:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:47.22222222222222%;width:33.333333333333336%">14:30–20:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:36.11111111111111%;width:47.222222222222236%">12:30–21:00<div class="brk" style="left:23.52941176470588%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh-mgr"></span>Cook (Mgr)</div><div class="track"><div class="bar b-boh-mgr" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook</div><div class="track"><div class="bar b-boh" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+  </div>
+  <div class="heatmaps">
+    <div class="heat-row">
+      <div class="lbl"></div>
+      <div class="cells"><div class="heat-cell axis">06</div><div class="heat-cell axis">07</div><div class="heat-cell axis">08</div><div class="heat-cell axis">09</div><div class="heat-cell axis">10</div><div class="heat-cell axis">11</div><div class="heat-cell axis">12</div><div class="heat-cell axis">13</div><div class="heat-cell axis">14</div><div class="heat-cell axis">15</div><div class="heat-cell axis">16</div><div class="heat-cell axis">17</div><div class="heat-cell axis">18</div><div class="heat-cell axis">19</div><div class="heat-cell axis">20</div><div class="heat-cell axis">21</div><div class="heat-cell axis">22</div><div class="heat-cell axis">23</div></div>
+    </div>
+    <div class="heat-row"><div class="lbl"><span class="name">orders</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">–</div><div class="heat-cell" style="background:#f6f0e3;color:#1a1814">0</div><div class="heat-cell" style="background:#d4b181;color:#1a1814">10</div><div class="heat-cell" style="background:#caa56f;color:#1a1814">11</div><div class="heat-cell" style="background:#b28646;color:#1a1814">15</div><div class="heat-cell" style="background:#a87833;color:#1a1814">16</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">18</div><div class="heat-cell" style="background:#9f6c22;color:#1a1814">18</div><div class="heat-cell" style="background:#a97934;color:#1a1814">16</div><div class="heat-cell" style="background:#a4742c;color:#1a1814">17</div><div class="heat-cell" style="background:#aa7b36;color:#1a1814">16</div><div class="heat-cell" style="background:#b08341;color:#1a1814">15</div><div class="heat-cell" style="background:#a97a35;color:#1a1814">16</div><div class="heat-cell" style="background:#b28646;color:#1a1814">15</div><div class="heat-cell" style="background:#e6d2b4;color:#1a1814">5</div><div class="heat-cell" style="background:#eadac0;color:#1a1814">4</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">0</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">0</div></div></div>
+    <div class="heat-row"><div class="lbl"><span class="name">sales</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">$3</div><div class="heat-cell" style="background:#cfab78;color:#1a1814">$195</div><div class="heat-cell" style="background:#bf975d;color:#1a1814">$239</div><div class="heat-cell" style="background:#a5752e;color:#1a1814">$313</div><div class="heat-cell" style="background:#a37129;color:#1a1814">$320</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">$337</div><div class="heat-cell" style="background:#a6752f;color:#1a1814">$311</div><div class="heat-cell" style="background:#b88e50;color:#1a1814">$259</div><div class="heat-cell" style="background:#bd9459;color:#1a1814">$244</div><div class="heat-cell" style="background:#bc9257;color:#1a1814">$249</div><div class="heat-cell" style="background:#c7a06a;color:#1a1814">$219</div><div class="heat-cell" style="background:#bb9255;color:#1a1814">$250</div><div class="heat-cell" style="background:#c59f67;color:#1a1814">$222</div><div class="heat-cell" style="background:#eadac0;color:#1a1814">$68</div><div class="heat-cell" style="background:#eee0ca;color:#1a1814">$50</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">$0</div><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#7a2818">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="day-title">
+      <h2>Thu <span class="dlabel">Thursday 5/28</span></h2>
+      
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Adjusted sales</span><span class="val">$2,950</span></div>
+      <div class="stat"><span class="lbl">vs Baseline</span><span class="val delta-down">-78<span class="pct-small">(-2.6%)</span></span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$538</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$168</span></div>
+      <div class="stat pct under"><span class="lbl">Labor %</span><span class="val">23.9%</span></div>
+    </div>
+  </div>
+  <div class="shifts">
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.7777777777777777%;width:33.33333333333333%">06:30–12:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:16.666666666666664%;width:33.333333333333336%">09:00–15:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:47.22222222222222%;width:33.333333333333336%">14:30–20:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:36.11111111111111%;width:47.222222222222236%">12:30–21:00<div class="brk" style="left:23.52941176470588%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh-mgr"></span>Cook (Mgr)</div><div class="track"><div class="bar b-boh-mgr" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook</div><div class="track"><div class="bar b-boh" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+  </div>
+  <div class="heatmaps">
+    <div class="heat-row">
+      <div class="lbl"></div>
+      <div class="cells"><div class="heat-cell axis">06</div><div class="heat-cell axis">07</div><div class="heat-cell axis">08</div><div class="heat-cell axis">09</div><div class="heat-cell axis">10</div><div class="heat-cell axis">11</div><div class="heat-cell axis">12</div><div class="heat-cell axis">13</div><div class="heat-cell axis">14</div><div class="heat-cell axis">15</div><div class="heat-cell axis">16</div><div class="heat-cell axis">17</div><div class="heat-cell axis">18</div><div class="heat-cell axis">19</div><div class="heat-cell axis">20</div><div class="heat-cell axis">21</div><div class="heat-cell axis">22</div><div class="heat-cell axis">23</div></div>
+    </div>
+    <div class="heat-row"><div class="lbl"><span class="name">orders</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">–</div><div class="heat-cell" style="background:#f6f0e3;color:#1a1814">0</div><div class="heat-cell" style="background:#d4b181;color:#1a1814">9</div><div class="heat-cell" style="background:#caa56f;color:#1a1814">10</div><div class="heat-cell" style="background:#b28646;color:#1a1814">14</div><div class="heat-cell" style="background:#a87833;color:#1a1814">15</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">17</div><div class="heat-cell" style="background:#9f6c22;color:#1a1814">16</div><div class="heat-cell" style="background:#a97934;color:#1a1814">15</div><div class="heat-cell" style="background:#a4742c;color:#1a1814">16</div><div class="heat-cell" style="background:#aa7b36;color:#1a1814">15</div><div class="heat-cell" style="background:#b08341;color:#1a1814">14</div><div class="heat-cell" style="background:#a97a35;color:#1a1814">15</div><div class="heat-cell" style="background:#b28646;color:#1a1814">14</div><div class="heat-cell" style="background:#e6d2b4;color:#1a1814">5</div><div class="heat-cell" style="background:#eadac0;color:#1a1814">3</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">0</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">0</div></div></div>
+    <div class="heat-row"><div class="lbl"><span class="name">sales</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">$3</div><div class="heat-cell" style="background:#cfab78;color:#1a1814">$176</div><div class="heat-cell" style="background:#bf975d;color:#1a1814">$215</div><div class="heat-cell" style="background:#a5752e;color:#1a1814">$282</div><div class="heat-cell" style="background:#a37129;color:#1a1814">$288</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">$303</div><div class="heat-cell" style="background:#a6752f;color:#1a1814">$280</div><div class="heat-cell" style="background:#b88e50;color:#1a1814">$233</div><div class="heat-cell" style="background:#bd9459;color:#1a1814">$220</div><div class="heat-cell" style="background:#bc9257;color:#1a1814">$224</div><div class="heat-cell" style="background:#c7a06a;color:#1a1814">$197</div><div class="heat-cell" style="background:#bb9255;color:#1a1814">$225</div><div class="heat-cell" style="background:#c59f67;color:#1a1814">$200</div><div class="heat-cell" style="background:#eadac0;color:#1a1814">$61</div><div class="heat-cell" style="background:#eee0ca;color:#1a1814">$45</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">$0</div><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#7a2818">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="day-title">
+      <h2>Fri <span class="dlabel">Friday 5/29</span></h2>
+      
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Adjusted sales</span><span class="val">$4,202</span></div>
+      <div class="stat"><span class="lbl">vs Baseline</span><span class="val delta-down">-456<span class="pct-small">(-9.8%)</span></span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$733</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$168</span></div>
+      <div class="stat pct under"><span class="lbl">Labor %</span><span class="val">21.4%</span></div>
+    </div>
+  </div>
+  <div class="shifts">
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.7777777777777777%;width:44.44444444444444%">06:30–14:30<div class="brk" style="left:6.25%;width:6.25%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:11.11111111111111%;width:33.33333333333333%">08:00–14:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Mid-1</div><div class="track"><div class="bar b-front" style="left:22.22222222222222%;width:47.22222222222222%">10:00–18:30<div class="brk" style="left:52.94117647058824%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:44.44444444444444%;width:47.222222222222214%">14:00–22:30<div class="brk" style="left:35.294117647058826%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:50.0%;width:44.44444444444444%">15:00–23:00<div class="brk" style="left:31.25%;width:6.25%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh-mgr"></span>Cook (Mgr)</div><div class="track"><div class="bar b-boh-mgr" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook</div><div class="track"><div class="bar b-boh" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+  </div>
+  <div class="heatmaps">
+    <div class="heat-row">
+      <div class="lbl"></div>
+      <div class="cells"><div class="heat-cell axis">06</div><div class="heat-cell axis">07</div><div class="heat-cell axis">08</div><div class="heat-cell axis">09</div><div class="heat-cell axis">10</div><div class="heat-cell axis">11</div><div class="heat-cell axis">12</div><div class="heat-cell axis">13</div><div class="heat-cell axis">14</div><div class="heat-cell axis">15</div><div class="heat-cell axis">16</div><div class="heat-cell axis">17</div><div class="heat-cell axis">18</div><div class="heat-cell axis">19</div><div class="heat-cell axis">20</div><div class="heat-cell axis">21</div><div class="heat-cell axis">22</div><div class="heat-cell axis">23</div></div>
+    </div>
+    <div class="heat-row"><div class="lbl"><span class="name">orders</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">–</div><div class="heat-cell" style="background:#f6f0e3;color:#1a1814">0</div><div class="heat-cell" style="background:#d4b181;color:#1a1814">12</div><div class="heat-cell" style="background:#caa56f;color:#1a1814">14</div><div class="heat-cell" style="background:#b28646;color:#1a1814">19</div><div class="heat-cell" style="background:#a87833;color:#1a1814">21</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">23</div><div class="heat-cell" style="background:#9f6c22;color:#1a1814">22</div><div class="heat-cell" style="background:#a97934;color:#1a1814">20</div><div class="heat-cell" style="background:#a4742c;color:#1a1814">21</div><div class="heat-cell" style="background:#aa7b36;color:#1a1814">20</div><div class="heat-cell" style="background:#b08341;color:#1a1814">19</div><div class="heat-cell" style="background:#a97a35;color:#1a1814">20</div><div class="heat-cell" style="background:#b28646;color:#1a1814">19</div><div class="heat-cell" style="background:#e6d2b4;color:#1a1814">6</div><div class="heat-cell" style="background:#eadac0;color:#1a1814">5</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">0</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">0</div></div></div>
+    <div class="heat-row"><div class="lbl"><span class="name">sales</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">$4</div><div class="heat-cell" style="background:#cfab78;color:#1a1814">$250</div><div class="heat-cell" style="background:#bf975d;color:#1a1814">$306</div><div class="heat-cell" style="background:#a5752e;color:#1a1814">$401</div><div class="heat-cell" style="background:#a37129;color:#1a1814">$410</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">$432</div><div class="heat-cell" style="background:#a6752f;color:#1a1814">$399</div><div class="heat-cell" style="background:#b88e50;color:#1a1814">$331</div><div class="heat-cell" style="background:#bd9459;color:#1a1814">$313</div><div class="heat-cell" style="background:#bc9257;color:#1a1814">$319</div><div class="heat-cell" style="background:#c7a06a;color:#1a1814">$280</div><div class="heat-cell" style="background:#bb9255;color:#1a1814">$321</div><div class="heat-cell" style="background:#c59f67;color:#1a1814">$285</div><div class="heat-cell" style="background:#eadac0;color:#1a1814">$87</div><div class="heat-cell" style="background:#eee0ca;color:#1a1814">$64</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">$0</div><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#cfddb7;color:#7a2818">1</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#7a2818">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="day-title">
+      <h2>Sat <span class="dlabel">Saturday 5/30</span></h2>
+      
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Adjusted sales</span><span class="val">$5,999</span></div>
+      <div class="stat"><span class="lbl">vs Baseline</span><span class="val delta-down">-439<span class="pct-small">(-6.8%)</span></span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$1006</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$168</span></div>
+      <div class="stat pct under"><span class="lbl">Labor %</span><span class="val">19.6%</span></div>
+    </div>
+  </div>
+  <div class="shifts">
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.7777777777777777%;width:44.44444444444444%">06:30–14:30<div class="brk" style="left:6.25%;width:6.25%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper-1</div><div class="track"><div class="bar b-front" style="left:11.11111111111111%;width:33.33333333333333%">08:00–14:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Peak-helper</div><div class="track"><div class="bar b-front" style="left:19.444444444444446%;width:33.33333333333333%">09:30–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Mid-AM</div><div class="track"><div class="bar b-front" style="left:13.88888888888889%;width:47.22222222222223%">08:30–17:00<div class="brk" style="left:5.88235294117647%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Mid</div><div class="track"><div class="bar b-front" style="left:30.555555555555557%;width:47.22222222222223%">11:30–20:00<div class="brk" style="left:52.94117647058824%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:47.22222222222222%;width:44.444444444444436%">14:30–22:30<div class="brk" style="left:25.0%;width:6.25%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:50.0%;width:44.44444444444444%">15:00–23:00<div class="brk" style="left:6.25%;width:6.25%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh-mgr"></span>Cook (Mgr)</div><div class="track"><div class="bar b-boh-mgr" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook</div><div class="track"><div class="bar b-boh" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+  </div>
+  <div class="heatmaps">
+    <div class="heat-row">
+      <div class="lbl"></div>
+      <div class="cells"><div class="heat-cell axis">06</div><div class="heat-cell axis">07</div><div class="heat-cell axis">08</div><div class="heat-cell axis">09</div><div class="heat-cell axis">10</div><div class="heat-cell axis">11</div><div class="heat-cell axis">12</div><div class="heat-cell axis">13</div><div class="heat-cell axis">14</div><div class="heat-cell axis">15</div><div class="heat-cell axis">16</div><div class="heat-cell axis">17</div><div class="heat-cell axis">18</div><div class="heat-cell axis">19</div><div class="heat-cell axis">20</div><div class="heat-cell axis">21</div><div class="heat-cell axis">22</div><div class="heat-cell axis">23</div></div>
+    </div>
+    <div class="heat-row"><div class="lbl"><span class="name">orders</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">–</div><div class="heat-cell" style="background:#f6f0e3;color:#1a1814">0</div><div class="heat-cell" style="background:#d4b181;color:#1a1814">16</div><div class="heat-cell" style="background:#caa56f;color:#1a1814">18</div><div class="heat-cell" style="background:#b28646;color:#1a1814">24</div><div class="heat-cell" style="background:#a87833;color:#1a1814">27</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">30</div><div class="heat-cell" style="background:#9f6c22;color:#1a1814">29</div><div class="heat-cell" style="background:#a97934;color:#1a1814">26</div><div class="heat-cell" style="background:#a4742c;color:#1a1814">28</div><div class="heat-cell" style="background:#aa7b36;color:#1a1814">26</div><div class="heat-cell" style="background:#b08341;color:#1a1814">25</div><div class="heat-cell" style="background:#a97a35;color:#1a1814">26</div><div class="heat-cell" style="background:#b28646;color:#1a1814">24</div><div class="heat-cell" style="background:#e6d2b4;color:#1a1814">8</div><div class="heat-cell" style="background:#eadac0;color:#1a1814">6</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">0</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">0</div></div></div>
+    <div class="heat-row"><div class="lbl"><span class="name">sales</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">$5</div><div class="heat-cell" style="background:#cfab78;color:#1a1814">$357</div><div class="heat-cell" style="background:#bf975d;color:#1a1814">$437</div><div class="heat-cell" style="background:#a5752e;color:#1a1814">$573</div><div class="heat-cell" style="background:#a37129;color:#1a1814">$585</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">$616</div><div class="heat-cell" style="background:#a6752f;color:#1a1814">$570</div><div class="heat-cell" style="background:#b88e50;color:#1a1814">$473</div><div class="heat-cell" style="background:#bd9459;color:#1a1814">$447</div><div class="heat-cell" style="background:#bc9257;color:#1a1814">$455</div><div class="heat-cell" style="background:#c7a06a;color:#1a1814">$400</div><div class="heat-cell" style="background:#bb9255;color:#1a1814">$458</div><div class="heat-cell" style="background:#c59f67;color:#1a1814">$407</div><div class="heat-cell" style="background:#eadac0;color:#1a1814">$125</div><div class="heat-cell" style="background:#eee0ca;color:#1a1814">$91</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">$0</div><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#243617;color:#1a1814">5</div><div class="heat-cell" style="background:#243617;color:#1a1814">5</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+  </div>
+</section>
+
+
+<section class="day">
+  <div class="day-head">
+    <div class="day-title">
+      <h2>Sun <span class="dlabel">Sunday 5/31</span></h2>
+      
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Adjusted sales</span><span class="val">$5,613</span></div>
+      <div class="stat"><span class="lbl">vs Baseline</span><span class="val delta-down">-195<span class="pct-small">(-3.4%)</span></span></div>
+      <div class="stat"><span class="lbl">FOH $</span><span class="val">$789</span></div>
+      <div class="stat"><span class="lbl">BOH $</span><span class="val">$168</span></div>
+      <div class="stat pct under"><span class="lbl">Labor %</span><span class="val">17.1%</span></div>
+    </div>
+  </div>
+  <div class="shifts">
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Opener</div><div class="track"><div class="bar b-front" style="left:2.7777777777777777%;width:44.44444444444444%">06:30–14:30<div class="brk" style="left:6.25%;width:6.25%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Rush-helper</div><div class="track"><div class="bar b-front" style="left:11.11111111111111%;width:33.33333333333333%">08:00–14:00</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Peak-helper</div><div class="track"><div class="bar b-front" style="left:19.444444444444446%;width:33.33333333333333%">09:30–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-front"></span>Mid</div><div class="track"><div class="bar b-front" style="left:27.77777777777778%;width:47.22222222222222%">11:00–19:30<div class="brk" style="left:35.294117647058826%;width:5.88235294117647%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-dish</div><div class="track"><div class="bar b-closer" style="left:47.22222222222222%;width:33.333333333333336%">14:30–20:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-closer"></span>Closer-station</div><div class="track"><div class="bar b-closer" style="left:44.44444444444444%;width:38.8888888888889%">14:00–21:00<div class="brk" style="left:7.142857142857142%;width:7.142857142857142%"></div></div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh-mgr"></span>Cook (Mgr)</div><div class="track"><div class="bar b-boh-mgr" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30</div></div></div>
+<div class="shift-row"><div class="lbl"><span class="dot dot-boh"></span>Cook</div><div class="track"><div class="bar b-boh" style="left:5.555555555555555%;width:47.22222222222222%">07:00–15:30<div class="brk" style="left:11.76470588235294%;width:5.88235294117647%"></div></div></div></div>
+  </div>
+  <div class="heatmaps">
+    <div class="heat-row">
+      <div class="lbl"></div>
+      <div class="cells"><div class="heat-cell axis">06</div><div class="heat-cell axis">07</div><div class="heat-cell axis">08</div><div class="heat-cell axis">09</div><div class="heat-cell axis">10</div><div class="heat-cell axis">11</div><div class="heat-cell axis">12</div><div class="heat-cell axis">13</div><div class="heat-cell axis">14</div><div class="heat-cell axis">15</div><div class="heat-cell axis">16</div><div class="heat-cell axis">17</div><div class="heat-cell axis">18</div><div class="heat-cell axis">19</div><div class="heat-cell axis">20</div><div class="heat-cell axis">21</div><div class="heat-cell axis">22</div><div class="heat-cell axis">23</div></div>
+    </div>
+    <div class="heat-row"><div class="lbl"><span class="name">orders</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">–</div><div class="heat-cell" style="background:#f6f0e3;color:#1a1814">0</div><div class="heat-cell" style="background:#d4b181;color:#1a1814">14</div><div class="heat-cell" style="background:#caa56f;color:#1a1814">16</div><div class="heat-cell" style="background:#b28646;color:#1a1814">22</div><div class="heat-cell" style="background:#a87833;color:#1a1814">24</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">26</div><div class="heat-cell" style="background:#9f6c22;color:#1a1814">26</div><div class="heat-cell" style="background:#a97934;color:#1a1814">24</div><div class="heat-cell" style="background:#a4742c;color:#1a1814">25</div><div class="heat-cell" style="background:#aa7b36;color:#1a1814">23</div><div class="heat-cell" style="background:#b08341;color:#1a1814">22</div><div class="heat-cell" style="background:#a97a35;color:#1a1814">24</div><div class="heat-cell" style="background:#b28646;color:#1a1814">22</div><div class="heat-cell" style="background:#e6d2b4;color:#1a1814">7</div><div class="heat-cell" style="background:#eadac0;color:#1a1814">5</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">0</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">0</div></div></div>
+    <div class="heat-row"><div class="lbl"><span class="name">sales</span><span class="unit">/hr</span></div><div class="cells"><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div><div class="heat-cell" style="background:#f6f1e4;color:#1a1814">$5</div><div class="heat-cell" style="background:#cfab78;color:#1a1814">$334</div><div class="heat-cell" style="background:#bf975d;color:#1a1814">$409</div><div class="heat-cell" style="background:#a5752e;color:#1a1814">$536</div><div class="heat-cell" style="background:#a37129;color:#1a1814">$548</div><div class="heat-cell" style="background:#9d6a1f;color:#1a1814">$577</div><div class="heat-cell" style="background:#a6752f;color:#1a1814">$533</div><div class="heat-cell" style="background:#b88e50;color:#1a1814">$443</div><div class="heat-cell" style="background:#bd9459;color:#1a1814">$418</div><div class="heat-cell" style="background:#bc9257;color:#1a1814">$426</div><div class="heat-cell" style="background:#c7a06a;color:#1a1814">$374</div><div class="heat-cell" style="background:#bb9255;color:#1a1814">$429</div><div class="heat-cell" style="background:#c59f67;color:#1a1814">$381</div><div class="heat-cell" style="background:#eadac0;color:#1a1814">$117</div><div class="heat-cell" style="background:#eee0ca;color:#1a1814">$85</div><div class="heat-cell" style="background:#f6f1e5;color:#1a1814">$0</div><div class="heat-cell" style="background:#f5f1ea;color:#9b9387">$0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH need</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+    <div class="heat-row compare"><div class="lbl"><span class="name">FOH sched</span><span class="unit">people</span></div><div class="cells"><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#9dbf78;color:#1a1814">2</div><div class="heat-cell" style="background:#5d7a3d;color:#7a2818">3</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#3d5827;color:#1a1814">4</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#5d7a3d;color:#1a1814">3</div><div class="heat-cell" style="background:#9dbf78;color:#7a2818">2</div><div class="heat-cell" style="background:#cfddb7;color:#1a1814">1</div><div class="heat-cell" style="background:#f4f1eb;color:#7a2818">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div><div class="heat-cell" style="background:#f4f1eb;color:#1a1814">0</div></div></div>
+  </div>
+</section>
+
+
+</div><!-- /tab-projection -->
+
+<script>
+(function() {
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+  tabs.forEach(function(t) {
+    t.addEventListener('click', function() {
+      const target = t.dataset.tab;
+      tabs.forEach(function(b) {
+        const active = (b.dataset.tab === target);
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      panels.forEach(function(p) {
+        p.classList.toggle('active', p.id === ('tab-' + target));
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
