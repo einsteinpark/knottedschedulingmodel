@@ -1,0 +1,430 @@
+date,hour,item,qty
+2026-06-01,8,Breakfast Sandwich,6
+2026-06-01,9,Breakfast Sandwich,4
+2026-06-01,10,Breakfast Sandwich,6
+2026-06-01,10,Chicken Caesar Wrap,3
+2026-06-01,11,Breakfast Sandwich,11
+2026-06-01,11,Chicken Caesar Wrap,6
+2026-06-01,12,Breakfast Sandwich,11
+2026-06-01,12,Chicken Caesar Wrap,7
+2026-06-02,8,Breakfast Sandwich,12
+2026-06-02,8,Chicken Caesar Wrap,1
+2026-06-02,9,Breakfast Sandwich,13
+2026-06-02,9,Chicken Caesar Wrap,2
+2026-06-02,10,Breakfast Sandwich,11
+2026-06-02,10,Chicken Caesar Wrap,1
+2026-06-02,11,Breakfast Sandwich,7
+2026-06-02,11,Chicken Caesar Wrap,4
+2026-06-02,12,Breakfast Sandwich,14
+2026-06-02,12,Chicken Caesar Wrap,4
+2026-06-03,8,Breakfast Sandwich,4
+2026-06-03,9,Breakfast Sandwich,9
+2026-06-03,10,Breakfast Sandwich,13
+2026-06-03,10,Chicken Caesar Wrap,3
+2026-06-03,11,Breakfast Sandwich,9
+2026-06-03,11,Chicken Caesar Wrap,5
+2026-06-03,12,Breakfast Sandwich,11
+2026-06-03,12,Chicken Caesar Wrap,4
+2026-06-03,13,Breakfast Sandwich,1
+2026-06-03,13,Chicken Caesar Wrap,2
+2026-06-04,8,Breakfast Sandwich,6
+2026-06-04,8,Chicken Caesar Wrap,1
+2026-06-04,9,Breakfast Sandwich,7
+2026-06-04,9,Chicken Caesar Wrap,4
+2026-06-04,10,Breakfast Sandwich,5
+2026-06-04,10,Chicken Caesar Wrap,3
+2026-06-04,11,Breakfast Sandwich,17
+2026-06-04,11,Chicken Caesar Wrap,5
+2026-06-04,12,Breakfast Sandwich,2
+2026-06-04,12,Chicken Caesar Wrap,5
+2026-06-05,8,Breakfast Sandwich,4
+2026-06-05,9,Breakfast Sandwich,26
+2026-06-05,10,Breakfast Sandwich,11
+2026-06-05,10,Chicken Caesar Wrap,2
+2026-06-05,11,Breakfast Sandwich,11
+2026-06-05,11,Chicken Caesar Wrap,3
+2026-06-05,12,Breakfast Sandwich,9
+2026-06-05,12,Chicken Caesar Wrap,5
+2026-06-05,13,Breakfast Sandwich,5
+2026-06-06,8,Breakfast Sandwich,4
+2026-06-06,9,Breakfast Sandwich,7
+2026-06-06,9,Chicken Caesar Wrap,4
+2026-06-06,10,Breakfast Sandwich,27
+2026-06-06,10,Chicken Caesar Wrap,1
+2026-06-06,11,Breakfast Sandwich,23
+2026-06-06,11,Chicken Caesar Wrap,7
+2026-06-06,12,Breakfast Sandwich,11
+2026-06-06,12,Chicken Caesar Wrap,6
+2026-06-06,13,Breakfast Sandwich,17
+2026-06-06,13,Chicken Caesar Wrap,5
+2026-06-07,8,Breakfast Sandwich,2
+2026-06-07,9,Breakfast Sandwich,11
+2026-06-07,9,Chicken Caesar Wrap,1
+2026-06-07,10,Breakfast Sandwich,24
+2026-06-07,10,Chicken Caesar Wrap,3
+2026-06-07,11,Breakfast Sandwich,17
+2026-06-07,11,Chicken Caesar Wrap,1
+2026-06-07,12,Breakfast Sandwich,14
+2026-06-07,12,Chicken Caesar Wrap,4
+2026-06-07,13,Breakfast Sandwich,10
+2026-06-07,13,Chicken Caesar Wrap,4
+2026-06-08,8,Breakfast Sandwich,3
+2026-06-08,9,Breakfast Sandwich,15
+2026-06-08,10,Breakfast Sandwich,9
+2026-06-08,10,Chicken Caesar Wrap,2
+2026-06-08,11,Breakfast Sandwich,12
+2026-06-08,11,Chicken Caesar Wrap,4
+2026-06-08,12,Breakfast Sandwich,5
+2026-06-08,12,Chicken Caesar Wrap,9
+2026-06-08,13,Breakfast Sandwich,1
+2026-06-08,13,Chicken Caesar Wrap,1
+2026-06-09,8,Breakfast Sandwich,1
+2026-06-09,9,Breakfast Sandwich,5
+2026-06-09,9,Chicken Caesar Wrap,2
+2026-06-09,10,Breakfast Sandwich,6
+2026-06-09,10,Chicken Caesar Wrap,1
+2026-06-09,11,Breakfast Sandwich,4
+2026-06-09,11,Chicken Caesar Wrap,3
+2026-06-09,12,Breakfast Sandwich,11
+2026-06-09,12,Chicken Caesar Wrap,4
+2026-06-09,13,Chicken Caesar Wrap,1
+2026-06-10,8,Breakfast Sandwich,9
+2026-06-10,8,Chicken Caesar Wrap,1
+2026-06-10,9,Breakfast Sandwich,5
+2026-06-10,9,Chicken Caesar Wrap,1
+2026-06-10,10,Breakfast Sandwich,6
+2026-06-10,10,Chicken Caesar Wrap,3
+2026-06-10,11,Breakfast Sandwich,4
+2026-06-10,11,Chicken Caesar Wrap,8
+2026-06-10,12,Breakfast Sandwich,3
+2026-06-10,12,Chicken Caesar Wrap,3
+2026-06-10,13,Breakfast Sandwich,1
+2026-06-10,13,Chicken Caesar Wrap,1
+2026-06-11,8,Breakfast Sandwich,7
+2026-06-11,9,Breakfast Sandwich,14
+2026-06-11,9,Chicken Caesar Wrap,2
+2026-06-11,10,Breakfast Sandwich,6
+2026-06-11,10,Chicken Caesar Wrap,3
+2026-06-11,11,Breakfast Sandwich,3
+2026-06-11,11,Chicken Caesar Wrap,2
+2026-06-11,12,Breakfast Sandwich,8
+2026-06-11,12,Chicken Caesar Wrap,2
+2026-06-12,8,Breakfast Sandwich,6
+2026-06-12,8,Chicken Caesar Wrap,1
+2026-06-12,9,Breakfast Sandwich,13
+2026-06-12,10,Breakfast Sandwich,10
+2026-06-12,10,Chicken Caesar Wrap,3
+2026-06-12,11,Breakfast Sandwich,5
+2026-06-12,11,Chicken Caesar Wrap,3
+2026-06-12,12,Breakfast Sandwich,5
+2026-06-12,13,Breakfast Sandwich,6
+2026-06-12,13,Chicken Caesar Wrap,2
+2026-06-13,8,Breakfast Sandwich,20
+2026-06-13,9,Breakfast Sandwich,14
+2026-06-13,9,Chicken Caesar Wrap,3
+2026-06-13,10,Breakfast Sandwich,15
+2026-06-13,10,Chicken Caesar Wrap,3
+2026-06-13,11,Breakfast Sandwich,20
+2026-06-13,11,Chicken Caesar Wrap,4
+2026-06-13,12,Breakfast Sandwich,13
+2026-06-13,12,Chicken Caesar Wrap,7
+2026-06-13,13,Breakfast Sandwich,12
+2026-06-13,13,Chicken Caesar Wrap,6
+2026-06-14,8,Breakfast Sandwich,9
+2026-06-14,8,Chicken Caesar Wrap,1
+2026-06-14,9,Breakfast Sandwich,8
+2026-06-14,9,Chicken Caesar Wrap,1
+2026-06-14,10,Breakfast Sandwich,17
+2026-06-14,10,Chicken Caesar Wrap,2
+2026-06-14,11,Breakfast Sandwich,15
+2026-06-14,11,Chicken Caesar Wrap,2
+2026-06-14,12,Breakfast Sandwich,9
+2026-06-14,12,Chicken Caesar Wrap,2
+2026-06-14,13,Breakfast Sandwich,5
+2026-06-14,13,Chicken Caesar Wrap,4
+2026-06-15,8,Breakfast Sandwich,2
+2026-06-15,9,Breakfast Sandwich,2
+2026-06-15,10,Breakfast Sandwich,5
+2026-06-15,10,Chicken Caesar Wrap,2
+2026-06-15,11,Breakfast Sandwich,8
+2026-06-15,11,Chicken Caesar Wrap,1
+2026-06-15,12,Breakfast Sandwich,3
+2026-06-15,12,Chicken Caesar Wrap,5
+2026-06-16,8,Breakfast Sandwich,1
+2026-06-16,8,Chicken Caesar Wrap,1
+2026-06-16,9,Breakfast Sandwich,3
+2026-06-16,9,Chicken Caesar Wrap,2
+2026-06-16,10,Breakfast Sandwich,4
+2026-06-16,11,Breakfast Sandwich,11
+2026-06-16,11,Chicken Caesar Wrap,2
+2026-06-16,12,Breakfast Sandwich,2
+2026-06-16,12,Chicken Caesar Wrap,8
+2026-06-16,13,Breakfast Sandwich,1
+2026-06-16,13,Chicken Caesar Wrap,1
+2026-06-17,8,Breakfast Sandwich,9
+2026-06-17,8,Chicken Caesar Wrap,1
+2026-06-17,9,Breakfast Sandwich,6
+2026-06-17,10,Breakfast Sandwich,7
+2026-06-17,11,Breakfast Sandwich,7
+2026-06-17,11,Chicken Caesar Wrap,2
+2026-06-17,12,Breakfast Sandwich,6
+2026-06-17,12,Chicken Caesar Wrap,3
+2026-06-18,8,Breakfast Sandwich,14
+2026-06-18,8,Chicken Caesar Wrap,4
+2026-06-18,9,Breakfast Sandwich,10
+2026-06-18,9,Chicken Caesar Wrap,5
+2026-06-18,10,Breakfast Sandwich,24
+2026-06-18,10,Chicken Caesar Wrap,3
+2026-06-18,11,Breakfast Sandwich,18
+2026-06-18,11,Chicken Caesar Wrap,3
+2026-06-18,12,Breakfast Sandwich,29
+2026-06-18,12,Chicken Caesar Wrap,11
+2026-06-18,13,Breakfast Sandwich,3
+2026-06-19,8,Breakfast Sandwich,21
+2026-06-19,8,Chicken Caesar Wrap,1
+2026-06-19,9,Breakfast Sandwich,35
+2026-06-19,9,Chicken Caesar Wrap,3
+2026-06-19,10,Breakfast Sandwich,36
+2026-06-19,10,Chicken Caesar Wrap,6
+2026-06-19,11,Breakfast Sandwich,24
+2026-06-19,11,Chicken Caesar Wrap,5
+2026-06-19,12,Breakfast Sandwich,21
+2026-06-19,12,Chicken Caesar Wrap,7
+2026-06-19,13,Breakfast Sandwich,20
+2026-06-19,13,Chicken Caesar Wrap,7
+2026-06-19,14,Breakfast Sandwich,2
+2026-06-20,8,Breakfast Sandwich,22
+2026-06-20,8,Chicken Caesar Wrap,6
+2026-06-20,9,Breakfast Sandwich,24
+2026-06-20,9,Chicken Caesar Wrap,9
+2026-06-20,10,Breakfast Sandwich,13
+2026-06-20,10,Chicken Caesar Wrap,5
+2026-06-20,11,Breakfast Sandwich,43
+2026-06-20,11,Chicken Caesar Wrap,5
+2026-06-20,12,Breakfast Sandwich,31
+2026-06-20,12,Chicken Caesar Wrap,3
+2026-06-20,13,Breakfast Sandwich,22
+2026-06-20,13,Chicken Caesar Wrap,8
+2026-06-20,14,Breakfast Sandwich,2
+2026-06-20,14,Chicken Caesar Wrap,2
+2026-06-21,8,Breakfast Sandwich,24
+2026-06-21,8,Chicken Caesar Wrap,1
+2026-06-21,9,Breakfast Sandwich,33
+2026-06-21,9,Chicken Caesar Wrap,3
+2026-06-21,10,Breakfast Sandwich,43
+2026-06-21,10,Chicken Caesar Wrap,4
+2026-06-21,11,Breakfast Sandwich,36
+2026-06-21,11,Chicken Caesar Wrap,7
+2026-06-21,12,Breakfast Sandwich,40
+2026-06-21,12,Chicken Caesar Wrap,6
+2026-06-21,13,Breakfast Sandwich,8
+2026-06-21,13,Chicken Caesar Wrap,6
+2026-06-22,8,Breakfast Sandwich,16
+2026-06-22,9,Breakfast Sandwich,11
+2026-06-22,10,Breakfast Sandwich,15
+2026-06-22,10,Chicken Caesar Wrap,3
+2026-06-22,11,Breakfast Sandwich,17
+2026-06-22,11,Chicken Caesar Wrap,3
+2026-06-22,12,Breakfast Sandwich,13
+2026-06-22,12,Chicken Caesar Wrap,5
+2026-06-23,8,Breakfast Sandwich,8
+2026-06-23,9,Breakfast Sandwich,11
+2026-06-23,9,Chicken Caesar Wrap,2
+2026-06-23,10,Breakfast Sandwich,16
+2026-06-23,10,Chicken Caesar Wrap,3
+2026-06-23,11,Breakfast Sandwich,13
+2026-06-23,11,Chicken Caesar Wrap,3
+2026-06-23,12,Breakfast Sandwich,13
+2026-06-23,12,Chicken Caesar Wrap,6
+2026-06-23,13,Breakfast Sandwich,2
+2026-06-23,13,Chicken Caesar Wrap,1
+2026-06-24,8,Breakfast Sandwich,5
+2026-06-24,9,Breakfast Sandwich,11
+2026-06-24,9,Chicken Caesar Wrap,2
+2026-06-24,10,Breakfast Sandwich,16
+2026-06-24,10,Chicken Caesar Wrap,4
+2026-06-24,11,Breakfast Sandwich,15
+2026-06-24,11,Chicken Caesar Wrap,8
+2026-06-24,12,Breakfast Sandwich,9
+2026-06-24,12,Chicken Caesar Wrap,8
+2026-06-24,14,Chicken Caesar Wrap,1
+2026-06-25,8,Breakfast Sandwich,12
+2026-06-25,8,Chicken Caesar Wrap,2
+2026-06-25,9,Breakfast Sandwich,8
+2026-06-25,9,Chicken Caesar Wrap,2
+2026-06-25,10,Breakfast Sandwich,12
+2026-06-25,10,Chicken Caesar Wrap,5
+2026-06-25,11,Breakfast Sandwich,23
+2026-06-25,11,Chicken Caesar Wrap,5
+2026-06-25,12,Breakfast Sandwich,8
+2026-06-25,12,Chicken Caesar Wrap,7
+2026-06-26,8,Breakfast Sandwich,10
+2026-06-26,8,Chicken Caesar Wrap,2
+2026-06-26,9,Breakfast Sandwich,12
+2026-06-26,9,Chicken Caesar Wrap,3
+2026-06-26,10,Breakfast Sandwich,7
+2026-06-26,10,Chicken Caesar Wrap,4
+2026-06-26,11,Breakfast Sandwich,13
+2026-06-26,11,Chicken Caesar Wrap,4
+2026-06-26,12,Breakfast Sandwich,25
+2026-06-26,12,Chicken Caesar Wrap,2
+2026-06-26,13,Breakfast Sandwich,7
+2026-06-26,13,Chicken Caesar Wrap,8
+2026-06-26,14,Chicken Caesar Wrap,1
+2026-06-27,8,Breakfast Sandwich,22
+2026-06-27,8,Chicken Caesar Wrap,1
+2026-06-27,9,Breakfast Sandwich,30
+2026-06-27,9,Chicken Caesar Wrap,2
+2026-06-27,10,Breakfast Sandwich,19
+2026-06-27,10,Chicken Caesar Wrap,4
+2026-06-27,11,Breakfast Sandwich,37
+2026-06-27,11,Chicken Caesar Wrap,6
+2026-06-27,12,Breakfast Sandwich,31
+2026-06-27,12,Chicken Caesar Wrap,1
+2026-06-27,13,Breakfast Sandwich,13
+2026-06-27,13,Chicken Caesar Wrap,6
+2026-06-28,8,Breakfast Sandwich,14
+2026-06-28,8,Chicken Caesar Wrap,1
+2026-06-28,9,Breakfast Sandwich,17
+2026-06-28,9,Chicken Caesar Wrap,3
+2026-06-28,10,Breakfast Sandwich,14
+2026-06-28,11,Breakfast Sandwich,43
+2026-06-28,11,Chicken Caesar Wrap,9
+2026-06-28,12,Breakfast Sandwich,27
+2026-06-28,12,Chicken Caesar Wrap,10
+2026-06-28,13,Breakfast Sandwich,26
+2026-06-28,13,Chicken Caesar Wrap,10
+2026-06-29,8,Breakfast Sandwich,4
+2026-06-29,8,Chicken Caesar Wrap,2
+2026-06-29,9,Breakfast Sandwich,14
+2026-06-29,9,Chicken Caesar Wrap,1
+2026-06-29,10,Breakfast Sandwich,13
+2026-06-29,10,Chicken Caesar Wrap,5
+2026-06-29,11,Breakfast Sandwich,13
+2026-06-29,11,Chicken Caesar Wrap,3
+2026-06-29,12,Breakfast Sandwich,9
+2026-06-29,12,Chicken Caesar Wrap,3
+2026-07-02,8,Breakfast Sandwich,9
+2026-07-02,8,Chicken Caesar Wrap,4
+2026-07-02,9,Breakfast Sandwich,22
+2026-07-02,9,Chicken Caesar Wrap,2
+2026-07-02,10,Breakfast Sandwich,8
+2026-07-02,10,Chicken Caesar Wrap,2
+2026-07-02,11,Breakfast Sandwich,18
+2026-07-02,11,Chicken Caesar Wrap,3
+2026-07-02,12,Breakfast Sandwich,7
+2026-07-02,12,Chicken Caesar Wrap,8
+2026-07-02,13,Chicken Caesar Wrap,1
+2026-07-03,8,Breakfast Sandwich,19
+2026-07-03,8,Chicken Caesar Wrap,2
+2026-07-03,9,Breakfast Sandwich,27
+2026-07-03,9,Chicken Caesar Wrap,2
+2026-07-03,10,Breakfast Sandwich,33
+2026-07-03,10,Chicken Caesar Wrap,2
+2026-07-03,11,Breakfast Sandwich,19
+2026-07-03,11,Chicken Caesar Wrap,13
+2026-07-03,12,Breakfast Sandwich,20
+2026-07-03,12,Chicken Caesar Wrap,7
+2026-07-03,13,Breakfast Sandwich,6
+2026-07-03,13,Chicken Caesar Wrap,6
+2026-07-04,8,Breakfast Sandwich,9
+2026-07-04,9,Breakfast Sandwich,12
+2026-07-04,9,Chicken Caesar Wrap,3
+2026-07-04,10,Breakfast Sandwich,18
+2026-07-04,10,Chicken Caesar Wrap,9
+2026-07-04,11,Breakfast Sandwich,24
+2026-07-04,11,Chicken Caesar Wrap,4
+2026-07-04,12,Breakfast Sandwich,14
+2026-07-04,12,Chicken Caesar Wrap,2
+2026-07-04,13,Breakfast Sandwich,7
+2026-07-04,13,Chicken Caesar Wrap,2
+2026-07-04,14,Chicken Caesar Wrap,1
+2026-07-05,8,Breakfast Sandwich,10
+2026-07-05,8,Chicken Caesar Wrap,2
+2026-07-05,9,Breakfast Sandwich,23
+2026-07-05,9,Chicken Caesar Wrap,4
+2026-07-05,10,Breakfast Sandwich,33
+2026-07-05,10,Chicken Caesar Wrap,3
+2026-07-05,11,Breakfast Sandwich,29
+2026-07-05,11,Chicken Caesar Wrap,3
+2026-07-05,12,Breakfast Sandwich,9
+2026-07-05,12,Chicken Caesar Wrap,2
+2026-07-05,13,Breakfast Sandwich,21
+2026-07-05,13,Chicken Caesar Wrap,8
+2026-07-05,14,Breakfast Sandwich,9
+2026-07-05,14,Chicken Caesar Wrap,1
+2026-07-06,8,Breakfast Sandwich,10
+2026-07-06,8,Chicken Caesar Wrap,1
+2026-07-06,9,Breakfast Sandwich,20
+2026-07-06,9,Chicken Caesar Wrap,3
+2026-07-06,10,Breakfast Sandwich,7
+2026-07-06,10,Chicken Caesar Wrap,3
+2026-07-06,11,Breakfast Sandwich,8
+2026-07-06,11,Chicken Caesar Wrap,4
+2026-07-06,12,Breakfast Sandwich,11
+2026-07-06,12,Chicken Caesar Wrap,4
+2026-07-06,13,Chicken Caesar Wrap,1
+2026-07-07,8,Breakfast Sandwich,5
+2026-07-07,9,Breakfast Sandwich,9
+2026-07-07,9,Chicken Caesar Wrap,7
+2026-07-07,10,Breakfast Sandwich,5
+2026-07-07,10,Chicken Caesar Wrap,2
+2026-07-07,11,Breakfast Sandwich,4
+2026-07-07,11,Chicken Caesar Wrap,2
+2026-07-07,12,Breakfast Sandwich,6
+2026-07-07,12,Chicken Caesar Wrap,4
+2026-07-08,8,Breakfast Sandwich,9
+2026-07-08,8,Chicken Caesar Wrap,1
+2026-07-08,9,Breakfast Sandwich,9
+2026-07-08,9,Chicken Caesar Wrap,1
+2026-07-08,10,Breakfast Sandwich,4
+2026-07-08,10,Chicken Caesar Wrap,3
+2026-07-08,11,Breakfast Sandwich,6
+2026-07-08,11,Chicken Caesar Wrap,4
+2026-07-08,12,Breakfast Sandwich,8
+2026-07-08,12,Chicken Caesar Wrap,6
+2026-07-09,8,Breakfast Sandwich,5
+2026-07-09,9,Breakfast Sandwich,12
+2026-07-09,10,Breakfast Sandwich,10
+2026-07-09,10,Chicken Caesar Wrap,3
+2026-07-09,11,Breakfast Sandwich,8
+2026-07-09,11,Chicken Caesar Wrap,4
+2026-07-09,12,Breakfast Sandwich,9
+2026-07-09,12,Chicken Caesar Wrap,7
+2026-07-10,8,Breakfast Sandwich,5
+2026-07-10,9,Breakfast Sandwich,13
+2026-07-10,9,Chicken Caesar Wrap,1
+2026-07-10,10,Breakfast Sandwich,7
+2026-07-10,10,Chicken Caesar Wrap,2
+2026-07-10,11,Breakfast Sandwich,17
+2026-07-10,11,Chicken Caesar Wrap,5
+2026-07-10,12,Breakfast Sandwich,9
+2026-07-10,12,Chicken Caesar Wrap,6
+2026-07-10,13,Breakfast Sandwich,5
+2026-07-10,13,Chicken Caesar Wrap,6
+2026-07-11,8,Breakfast Sandwich,14
+2026-07-11,8,Chicken Caesar Wrap,1
+2026-07-11,9,Breakfast Sandwich,21
+2026-07-11,9,Chicken Caesar Wrap,2
+2026-07-11,10,Breakfast Sandwich,31
+2026-07-11,10,Chicken Caesar Wrap,1
+2026-07-11,11,Breakfast Sandwich,23
+2026-07-11,11,Chicken Caesar Wrap,7
+2026-07-11,12,Breakfast Sandwich,16
+2026-07-11,12,Chicken Caesar Wrap,4
+2026-07-11,13,Breakfast Sandwich,10
+2026-07-11,14,Chicken Caesar Wrap,4
+2026-07-12,8,Breakfast Sandwich,19
+2026-07-12,8,Chicken Caesar Wrap,5
+2026-07-12,9,Breakfast Sandwich,8
+2026-07-12,9,Chicken Caesar Wrap,1
+2026-07-12,10,Breakfast Sandwich,12
+2026-07-12,10,Chicken Caesar Wrap,3
+2026-07-12,11,Breakfast Sandwich,17
+2026-07-12,11,Chicken Caesar Wrap,5
+2026-07-12,12,Breakfast Sandwich,20
+2026-07-12,12,Chicken Caesar Wrap,4
+2026-07-12,13,Breakfast Sandwich,11
+2026-07-12,13,Chicken Caesar Wrap,2
+2026-07-12,14,Breakfast Sandwich,4
+2026-07-12,14,Chicken Caesar Wrap,2
