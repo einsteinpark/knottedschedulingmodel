@@ -183,7 +183,7 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
     # its Mid — see dow 3 below.
     0: [
         FOHShift("Opener",         _t(6, 30),  _t(12, 30), WAGE_JR, 'jr'),   # 6:30a-12:30p
-        FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
+        FOHShift("Second Opener",  _t(8, 0),   _t(16, 30), WAGE_JR, 'jr'),   # 8a-4:30p (extended from 8a-2p per operator, 2026-08)
         FOHShift("First Closer",   _t(12, 0),  _t(20, 0),  WAGE_MD, 'md'),   # 12p-8p
         FOHShift("Second Closer",  _t(15, 0),  _t(21, 0),  WAGE_SR, 'sr'),   # 3p-9p
     ],
@@ -201,7 +201,7 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
         FOHShift("Opener",         _t(6, 30),  _t(14, 30), WAGE_JR, 'jr'),   # 6:30a-2:30p
         FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
         FOHShift("Mid-2",          _t(9, 0),   _t(17, 30), WAGE_MD, 'md'),   # 9a-5:30p (was 10a-6:30p; Mid-1 9a-3p removed per operator, 2026-08)
-        FOHShift("Mid-3",          _t(11, 0),  _t(19, 30), WAGE_JR, 'jr'),   # 11a-7:30p
+        FOHShift("Mid-3",          _t(11, 0),  _t(19, 30), WAGE_JR, 'jr', pinned_break_start_min=_t(15, 30)),   # 11a-7:30p, break pinned 3:30-4p (afternoon lull, latest CA-legal)
         FOHShift("First Closer",   _t(15, 0),  _t(22, 30), WAGE_MD, 'md'),   # 3p-10:30p
         FOHShift("Second Closer",  _t(17, 0),  _t(23, 0),  WAGE_SR, 'sr'),   # 5p-11p
     ],
@@ -210,7 +210,7 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
         FOHShift("Opener",         _t(6, 30),  _t(14, 0),  WAGE_JR, 'jr'),   # 6:30a-2p
         FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
         FOHShift("Third Opener",   _t(8, 30),  _t(17, 0),  WAGE_JR, 'jr'),   # 8:30a-5p
-        FOHShift("Mid-2",          _t(10, 0),  _t(18, 30), WAGE_MD, 'md'),   # 10a-6:30p (Mid-1 9a-3p removed per operator, 2026-08)
+        FOHShift("Mid-2",          _t(10, 0),  _t(18, 30), WAGE_MD, 'md', pinned_break_start_min=_t(14, 30)),   # 10a-6:30p, break pinned 2:30-3p (afternoon lull, latest CA-legal). Mid-1 9a-3p removed per operator, 2026-08
         FOHShift("Mid-3",          _t(14, 0),  _t(20, 0),  WAGE_MD, 'md'),   # 2p-8p
         FOHShift("First Closer",   _t(15, 0),  _t(22, 30), WAGE_MD, 'md'),   # 3p-10:30p
         FOHShift("Second Closer",  _t(17, 0),  _t(23, 0),  WAGE_SR, 'sr'),   # 5p-11p
