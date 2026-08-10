@@ -184,7 +184,7 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
     0: [
         FOHShift("Opener",         _t(6, 30),  _t(12, 30), WAGE_JR, 'jr'),   # 6:30a-12:30p
         FOHShift("Second Opener",  _t(8, 0),   _t(16, 30), WAGE_JR, 'jr'),   # 8a-4:30p (extended from 8a-2p per operator, 2026-08)
-        FOHShift("First Closer",   _t(12, 0),  _t(20, 0),  WAGE_MD, 'md'),   # 12p-8p
+        FOHShift("First Closer",   _t(12, 0),  _t(20, 30), WAGE_MD, 'md'),   # 12p-8:30p (per operator, 2026-08)
         FOHShift("Second Closer",  _t(15, 0),  _t(21, 0),  WAGE_SR, 'sr'),   # 3p-9p
     ],
     1: None, 2: None, 3: None,
@@ -193,7 +193,7 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
         FOHShift("Opener",         _t(6, 30),  _t(14, 30), WAGE_JR, 'jr'),   # 6:30a-2:30p
         FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
         FOHShift("Mid-2",          _t(8, 30),  _t(17, 0),  WAGE_MD, 'md'),   # 8:30a-5p (per operator, 2026-08)
-        FOHShift("Mid-3",          _t(11, 0),  _t(18, 0),  WAGE_JR, 'jr', pinned_break_start_min=_t(15, 30)),   # 11a-6p, break pinned 3:30-4p (afternoon lull)
+        FOHShift("Mid-3",          _t(11, 0),  _t(17, 0),  WAGE_JR, 'jr'),   # 11a-5p (6h, no break) per operator, 2026-08
         FOHShift("First Closer",   _t(15, 0),  _t(22, 30), WAGE_MD, 'md'),   # 3p-10:30p
         FOHShift("Second Closer",  _t(17, 0),  _t(23, 0),  WAGE_SR, 'sr'),   # 5p-11p
     ],
