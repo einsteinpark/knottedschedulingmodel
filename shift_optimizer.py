@@ -178,23 +178,29 @@ CLOSE_BY_DOW = {
 }
 
 PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
-    # Mon-Thu (operator spec, all identical): early Opener unlocks at 6:30, plus
-    # a Second Opener, a Mid, and two staggered closers. All 6-hour shifts
-    # (no meal break by the model's 6hr convention).
+    # Mon-Wed (operator spec): Opener, Second Opener, and two staggered closers.
+    # The 10a-4p Mid was removed per operator request (2026-08). Thursday keeps
+    # its Mid — see dow 3 below.
     0: [
+        FOHShift("Opener",         _t(6, 30),  _t(12, 30), WAGE_JR, 'jr'),   # 6:30a-12:30p
+        FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
+        FOHShift("First Closer",   _t(12, 0),  _t(20, 0),  WAGE_MD, 'md'),   # 12p-8p
+        FOHShift("Second Closer",  _t(15, 0),  _t(21, 0),  WAGE_SR, 'sr'),   # 3p-9p
+    ],
+    1: None, 2: None,
+    # Thu (operator spec): keeps the 10a-4p Mid that Mon-Wed dropped.
+    3: [
         FOHShift("Opener",         _t(6, 30),  _t(12, 30), WAGE_JR, 'jr'),   # 6:30a-12:30p
         FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
         FOHShift("Mid",            _t(10, 0),  _t(16, 0),  WAGE_JR, 'jr'),   # 10a-4p
         FOHShift("First Closer",   _t(12, 0),  _t(20, 0),  WAGE_MD, 'md'),   # 12p-8p
         FOHShift("Second Closer",  _t(15, 0),  _t(21, 0),  WAGE_SR, 'sr'),   # 3p-9p
     ],
-    1: None, 2: None, 3: None,
     # Fri (operator spec): Opener + Second Opener, three mids, two closers.
     4: [
         FOHShift("Opener",         _t(6, 30),  _t(14, 30), WAGE_JR, 'jr'),   # 6:30a-2:30p
         FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
-        FOHShift("Mid-1",          _t(9, 0),   _t(15, 0),  WAGE_JR, 'jr'),   # 9a-3p
-        FOHShift("Mid-2",          _t(10, 0),  _t(18, 30), WAGE_MD, 'md'),   # 10a-6:30p
+        FOHShift("Mid-2",          _t(9, 0),   _t(17, 30), WAGE_MD, 'md'),   # 9a-5:30p (was 10a-6:30p; Mid-1 9a-3p removed per operator, 2026-08)
         FOHShift("Mid-3",          _t(11, 0),  _t(19, 30), WAGE_JR, 'jr'),   # 11a-7:30p
         FOHShift("First Closer",   _t(15, 0),  _t(22, 30), WAGE_MD, 'md'),   # 3p-10:30p
         FOHShift("Second Closer",  _t(17, 0),  _t(23, 0),  WAGE_SR, 'sr'),   # 5p-11p
@@ -204,8 +210,7 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
         FOHShift("Opener",         _t(6, 30),  _t(14, 0),  WAGE_JR, 'jr'),   # 6:30a-2p
         FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
         FOHShift("Third Opener",   _t(8, 30),  _t(17, 0),  WAGE_JR, 'jr'),   # 8:30a-5p
-        FOHShift("Mid-1",          _t(9, 0),   _t(15, 0),  WAGE_JR, 'jr'),   # 9a-3p
-        FOHShift("Mid-2",          _t(10, 0),  _t(18, 30), WAGE_MD, 'md'),   # 10a-6:30p
+        FOHShift("Mid-2",          _t(10, 0),  _t(18, 30), WAGE_MD, 'md'),   # 10a-6:30p (Mid-1 9a-3p removed per operator, 2026-08)
         FOHShift("Mid-3",          _t(14, 0),  _t(20, 0),  WAGE_MD, 'md'),   # 2p-8p
         FOHShift("First Closer",   _t(15, 0),  _t(22, 30), WAGE_MD, 'md'),   # 3p-10:30p
         FOHShift("Second Closer",  _t(17, 0),  _t(23, 0),  WAGE_SR, 'sr'),   # 5p-11p
@@ -215,14 +220,13 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
     6: [
         FOHShift("Opener",         _t(6, 30),  _t(14, 0),  WAGE_JR, 'jr'),   # 6:30a-2p
         FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
-        FOHShift("Mid-1",          _t(8, 30),  _t(14, 30), WAGE_JR, 'jr'),   # 8:30a-2:30p
-        FOHShift("Mid-2",          _t(9, 0),   _t(17, 30), WAGE_MD, 'md'),   # 9a-5:30p
+        FOHShift("Mid-2",          _t(9, 0),   _t(15, 0),  WAGE_MD, 'md'),   # 9a-3p (was 9a-5:30p; Mid-1 8:30a-2:30p removed per operator, 2026-08)
         FOHShift("Mid-3",          _t(11, 0),  _t(19, 30), WAGE_MD, 'md'),   # 11a-7:30p
         FOHShift("First Closer",   _t(14, 30), _t(20, 30), WAGE_MD, 'md'),   # 2:30p-8:30p
         FOHShift("Second Closer",  _t(14, 0),  _t(21, 0),  WAGE_SR, 'sr'),   # 2p-9p
     ],
 }
-for d in (1, 2, 3):
+for d in (1, 2):
     PROPOSED_SCHEDULE[d] = [
         FOHShift(s.label, s.start_min, s.end_min, s.wage, s.tier)
         for s in PROPOSED_SCHEDULE[0]
