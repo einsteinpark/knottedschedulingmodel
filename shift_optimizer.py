@@ -213,10 +213,10 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
         FOHShift("Opener",         _t(6, 30),  _t(14, 0),  WAGE_JR, 'jr'),   # 6:30a-2p
         FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
         FOHShift("Mid-1",          _t(8, 30),  _t(14, 30), WAGE_MD, 'md'),   # 8:30a-2:30p (relabeled from Mid-2, per operator 2026-08)
-        FOHShift("Mid-2",          _t(10, 0),  _t(16, 0),  WAGE_MD, 'md'),   # 10a-4p (relabeled from Mid-3, per operator 2026-08)
-        FOHShift("Mid-3",          _t(12, 30), _t(18, 30), WAGE_JR, 'jr'),   # 12:30p-6:30p (new, per operator 2026-08; tier assumed jr)
+        FOHShift("Mid-2",          _t(9, 30),  _t(15, 30), WAGE_MD, 'md'),   # 9:30a-3:30p (per operator 2026-08)
+        FOHShift("Mid-3",          _t(14, 0),  _t(20, 0),  WAGE_JR, 'jr'),   # 2p-8p (per operator 2026-08; tier assumed jr)
         FOHShift("First Closer",   _t(14, 30), _t(20, 30), WAGE_MD, 'md'),   # 2:30p-8:30p
-        FOHShift("Second Closer",  _t(14, 0),  _t(21, 0),  WAGE_SR, 'sr'),   # 2p-9p
+        FOHShift("Second Closer",  _t(15, 0),  _t(21, 0),  WAGE_SR, 'sr'),   # 3p-9p (per operator 2026-08)
     ],
 }
 for d in (1, 2, 3):
