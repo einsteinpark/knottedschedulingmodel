@@ -53,10 +53,10 @@ def _get(path: str, params: dict) -> dict:
 
 def fetch_shifts(start: date, end: date) -> List[dict]:
     """Shifts overlapping [start, end]. Paginated via cursor."""
+    company_id = _cfg("SEVENSHIFTS_COMPANY_ID")
     out, cursor = [], None
     while True:
         params = {
-            "company_id": _cfg("SEVENSHIFTS_COMPANY_ID"),
             "location_id": _cfg("SEVENSHIFTS_LOCATION_ID"),
             "start[gte]": f"{start.isoformat()}T00:00:00",
             "start[lte]": f"{end.isoformat()}T23:59:59",
@@ -64,7 +64,7 @@ def fetch_shifts(start: date, end: date) -> List[dict]:
         }
         if cursor:
             params["cursor"] = cursor
-        resp = _get("/shifts", params)
+        resp = _get(f"/company/{company_id}/shifts", params)
         out.extend(resp.get("data", []))
         cursor = (resp.get("meta", {}) or {}).get("cursor", {}).get("next")
         if not cursor:
