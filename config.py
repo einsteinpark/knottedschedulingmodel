@@ -66,18 +66,20 @@ ASSUMED_COGS_PCT        = 0.32   # plug-in: what we expect food/bev cost to be
 LABOR_WEEK_TOLERANCE    = 0.02   # i.e. 23%–27% is OK
 
 # ---- Baseline window: how many trailing weeks define "typical" ----
-# 8 weeks (reverted from 4 once the Nate.Eatz viral lift subsided): a longer,
-# more stable window for normal operating conditions. Per-DOW baseline uses the
-# most recent BASELINE_WEEKS occurrences of each weekday, weighted toward the
-# most recent (see BASELINE_DOW_WEIGHTS).
-BASELINE_WEEKS = 8
+# 4 weeks (narrowed from 8 in Aug 2026): the longer window still reached back
+# into the June Nate.Eatz viral spike ($44-45k weeks), propping the baseline
+# ~10% above the post-viral run-rate. A 4-week window physically excludes the
+# viral period so the baseline tracks the current cooldown. Per-DOW baseline
+# uses the most recent BASELINE_WEEKS occurrences of each weekday, weighted
+# toward the most recent (see BASELINE_DOW_WEIGHTS).
+BASELINE_WEEKS = 4
 
-# Per-DOW recency weights, most-recent occurrence first. The last TWO weeks are
-# weighted most heavily (weight 3 each), the prior two moderately (2), and the
-# oldest four at baseline (1). Last-2-weeks carry ~43% of each DOW baseline —
-# recent-aware but far more stable than the viral-period 4-week [4,3,2,1].
+# Per-DOW recency weights, most-recent occurrence first. Linear 4/3/2/1: most
+# recent week weighted 4x, then 3x, 2x, and oldest week 1x. The most recent week
+# carries 40% of each DOW baseline (4/10) — a strongly recency-biased 4-week
+# moving average that follows the trend closely.
 # If fewer than len() occurrences exist, the leading weights are used/renormalized.
-BASELINE_DOW_WEIGHTS = [3, 3, 2, 2, 1, 1, 1, 1]
+BASELINE_DOW_WEIGHTS = [4, 3, 2, 1]
 
 # Baseline/recency use only COMPLETED data strictly before the current week.
 # Derived from the run-date anchor so it rolls automatically.
