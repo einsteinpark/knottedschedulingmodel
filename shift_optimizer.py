@@ -177,48 +177,91 @@ CLOSE_BY_DOW = {
     6: _t(20, 0),
 }
 
+# Ordinal words for auto-labeling openers/closers.
+_ORDINALS = ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth"]
+
+
+def relabel_shifts(shifts: List[FOHShift], close_min: int) -> List[FOHShift]:
+    """Auto-label FOH shifts by the operator's naming convention:
+
+      - starts before 8:00am              -> Opener (First/Second Opener if >1)
+      - ends after the day's close time    -> First Closer, Second Closer, ...
+      - everyone else                      -> Mid-1, Mid-2, ...
+
+    Openers are ordered by start time; mids by start time; closers by END time
+    (earliest departure after close = First Closer — the staggered-close order).
+    Mutates the shift labels in place and returns the list.
+    """
+    OPEN_CUTOFF = 8 * 60
+
+    def is_closer(s):
+        return s.end_min > close_min
+
+    def is_opener(s):
+        return s.start_min < OPEN_CUTOFF and not is_closer(s)
+
+    openers = sorted([s for s in shifts if is_opener(s)], key=lambda s: (s.start_min, s.end_min))
+    closers = sorted([s for s in shifts if is_closer(s)], key=lambda s: (s.end_min, s.start_min))
+    mids = sorted([s for s in shifts if not is_opener(s) and not is_closer(s)],
+                  key=lambda s: (s.start_min, s.end_min))
+
+    for i, s in enumerate(openers):
+        s.label = "Opener" if len(openers) == 1 else f"{_ORDINALS[i]} Opener"
+    for i, s in enumerate(mids):
+        s.label = f"Mid-{i + 1}"
+    for i, s in enumerate(closers):
+        s.label = "Closer" if len(closers) == 1 else f"{_ORDINALS[i]} Closer"
+    return shifts
+
+
+# Raw shift TIMES per day (labels are auto-assigned by relabel_shifts below, so
+# the placeholder labels here are cosmetic). Wage tiers are PROVISIONAL pending
+# the operator pay-rate review: jr $19 / md $21 / sr $23.
 PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
-    # Mon-Thu (operator spec, all identical): Opener, extended Second Opener
-    # (8a-4:30p), and two staggered closers. The 10a-4p Mid was removed and
-    # Thursday reunified with Mon-Wed per operator request (2026-08).
+    # Mon-Thu (operator spec 2026-08): opener, one long mid, two staggered closers.
     0: [
-        FOHShift("Opener",         _t(6, 30),  _t(12, 30), WAGE_JR, 'jr'),   # 6:30a-12:30p
-        FOHShift("Second Opener",  _t(8, 0),   _t(16, 30), WAGE_JR, 'jr'),   # 8a-4:30p (extended from 8a-2p per operator, 2026-08)
-        FOHShift("First Closer",   _t(12, 0),  _t(20, 30), WAGE_MD, 'md'),   # 12p-8:30p (per operator, 2026-08)
-        FOHShift("Second Closer",  _t(15, 0),  _t(21, 0),  WAGE_SR, 'sr'),   # 3p-9p
+        FOHShift("Opener",        _t(6, 30),  _t(12, 30), WAGE_JR, 'jr'),   # 6:30a-12:30p
+        FOHShift("Mid-1",         _t(8, 0),   _t(16, 30), WAGE_JR, 'jr'),   # 8a-4:30p
+        FOHShift("First Closer",  _t(14, 30), _t(20, 30), WAGE_MD, 'md'),   # 2:30p-8:30p
+        FOHShift("Second Closer", _t(12, 30), _t(21, 0),  WAGE_SR, 'sr'),   # 12:30p-9p
     ],
     1: None, 2: None, 3: None,
-    # Fri (operator spec): Opener + Second Opener, three mids, two closers.
+    # Fri (operator spec 2026-08).
     4: [
-        FOHShift("Opener",         _t(6, 30),  _t(14, 30), WAGE_JR, 'jr'),   # 6:30a-2:30p
-        FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
-        FOHShift("Mid-2",          _t(8, 30),  _t(17, 0),  WAGE_MD, 'md'),   # 8:30a-5p (per operator, 2026-08)
-        FOHShift("Mid-3",          _t(11, 0),  _t(17, 0),  WAGE_JR, 'jr'),   # 11a-5p (6h, no break) per operator, 2026-08
-        FOHShift("First Closer",   _t(15, 0),  _t(22, 30), WAGE_MD, 'md'),   # 3p-10:30p
-        FOHShift("Second Closer",  _t(17, 0),  _t(23, 0),  WAGE_SR, 'sr'),   # 5p-11p
+        FOHShift("Opener",        _t(6, 30),  _t(12, 0),  WAGE_JR, 'jr'),   # 6:30a-12p
+        FOHShift("Mid-1",         _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
+        FOHShift("Mid-2",         _t(9, 0),   _t(15, 0),  WAGE_JR, 'jr'),   # 9a-3p
+        FOHShift("Mid-3",         _t(10, 0),  _t(18, 30), WAGE_MD, 'md'),   # 10a-6:30p
+        FOHShift("Mid-4",         _t(11, 0),  _t(19, 30), WAGE_MD, 'md'),   # 11a-7:30p
+        FOHShift("First Closer",  _t(16, 30), _t(22, 30), WAGE_MD, 'md'),   # 4:30p-10:30p
+        FOHShift("Second Closer", _t(15, 0),  _t(23, 0),  WAGE_SR, 'sr'),   # 3p-11p
     ],
-    # Sat (operator spec): same shape as Fri.
+    # Sat (operator spec 2026-08).
     5: [
-        FOHShift("Opener",         _t(6, 30),  _t(14, 0),  WAGE_JR, 'jr'),   # 6:30a-2p
-        FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
-        FOHShift("Third Opener",   _t(8, 30),  _t(17, 0),  WAGE_JR, 'jr'),   # 8:30a-5p
-        FOHShift("Mid-2",          _t(10, 0),  _t(18, 30), WAGE_MD, 'md', pinned_break_start_min=_t(14, 30)),   # 10a-6:30p, break pinned 2:30-3p (afternoon lull, latest CA-legal). Mid-1 9a-3p removed per operator, 2026-08
-        FOHShift("Mid-3",          _t(14, 0),  _t(20, 0),  WAGE_MD, 'md'),   # 2p-8p
-        FOHShift("First Closer",   _t(15, 0),  _t(22, 30), WAGE_MD, 'md'),   # 3p-10:30p
-        FOHShift("Second Closer",  _t(17, 0),  _t(23, 0),  WAGE_SR, 'sr'),   # 5p-11p
+        FOHShift("Opener",        _t(6, 30),  _t(12, 0),  WAGE_JR, 'jr'),   # 6:30a-12p
+        FOHShift("Mid-1",         _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
+        FOHShift("Mid-2",         _t(8, 30),  _t(17, 0),  WAGE_MD, 'md'),   # 8:30a-5p
+        FOHShift("Mid-3",         _t(9, 0),   _t(15, 0),  WAGE_JR, 'jr'),   # 9a-3p
+        FOHShift("Mid-4",         _t(10, 0),  _t(18, 30), WAGE_MD, 'md'),   # 10a-6:30p
+        FOHShift("Mid-5",         _t(14, 0),  _t(20, 0),  WAGE_MD, 'md'),   # 2p-8p
+        FOHShift("First Closer",  _t(16, 30), _t(22, 30), WAGE_MD, 'md'),   # 4:30p-10:30p
+        FOHShift("Second Closer", _t(15, 0),  _t(23, 0),  WAGE_SR, 'sr'),   # 3p-11p
     ],
-    # Sun (operator spec): Second Opener (replaces the old Rush-helper), three
-    # mids, two closers.
+    # Sun (operator spec 2026-08).
     6: [
-        FOHShift("Opener",         _t(6, 30),  _t(14, 0),  WAGE_JR, 'jr'),   # 6:30a-2p
-        FOHShift("Second Opener",  _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
-        FOHShift("Mid-1",          _t(8, 30),  _t(14, 30), WAGE_MD, 'md'),   # 8:30a-2:30p (relabeled from Mid-2, per operator 2026-08)
-        FOHShift("Mid-2",          _t(9, 30),  _t(15, 30), WAGE_MD, 'md'),   # 9:30a-3:30p (per operator 2026-08)
-        FOHShift("Mid-3",          _t(14, 0),  _t(20, 0),  WAGE_MD, 'md'),   # 2p-8p (per operator 2026-08; tier confirmed md $21)
-        FOHShift("First Closer",   _t(14, 30), _t(20, 30), WAGE_MD, 'md'),   # 2:30p-8:30p
-        FOHShift("Second Closer",  _t(15, 0),  _t(21, 0),  WAGE_SR, 'sr'),   # 3p-9p (per operator 2026-08)
+        FOHShift("Opener",        _t(6, 30),  _t(12, 0),  WAGE_JR, 'jr'),   # 6:30a-12p
+        FOHShift("Mid-1",         _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
+        FOHShift("Mid-2",         _t(8, 30),  _t(17, 0),  WAGE_MD, 'md'),   # 8:30a-5p
+        FOHShift("Mid-3",         _t(9, 0),   _t(17, 30), WAGE_MD, 'md'),   # 9a-5:30p
+        FOHShift("Mid-4",         _t(11, 0),  _t(19, 30), WAGE_MD, 'md'),   # 11a-7:30p
+        FOHShift("First Closer",  _t(14, 30), _t(20, 30), WAGE_MD, 'md'),   # 2:30p-8:30p
+        FOHShift("Second Closer", _t(14, 0),  _t(21, 0),  WAGE_SR, 'sr'),   # 2p-9p
     ],
 }
+# Auto-label each distinct day by the start/end convention, then replicate
+# Mon-Thu across Tue-Thu.
+for _d in (0, 4, 5, 6):
+    relabel_shifts(PROPOSED_SCHEDULE[_d], CLOSE_BY_DOW[_d])
 for d in (1, 2, 3):
     PROPOSED_SCHEDULE[d] = [
         FOHShift(s.label, s.start_min, s.end_min, s.wage, s.tier)

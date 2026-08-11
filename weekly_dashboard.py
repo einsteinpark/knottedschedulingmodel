@@ -98,12 +98,12 @@ def boh_shifts_for_day(dow: int) -> List[BOHShift]:
                                break_start_min=8*60, break_end_min=8*60+30))
         shifts.append(BOHShift("Cook 2", start, end, config.AVG_BOH_WAGE, False,
                                break_start_min=8*60+30, break_end_min=9*60))
-    # Baseline PM prep: 4:00pm-10:00pm at $20/hr. One every day, two on Thu/Fri/Sat.
-    # 6.0hr shift -> no meal break (<=6hr) -> 6.0 paid hrs = $120.
-    pm_prep_count = 2 if dow in (3, 4, 5) else 1
+    # Baseline PM prep: 4:30pm-10:30pm at $20/hr, TWO every day (operator, 2026-08).
+    # 6.0hr shift -> no meal break (<=6hr) -> 6.0 paid hrs = $120 each.
+    pm_prep_count = 2
     for i in range(pm_prep_count):
-        label = "PM Prep" if pm_prep_count == 1 else f"PM Prep {i+1}"
-        shifts.append(BOHShift(label, 16*60, 22*60, PREP_COOK_WAGE, False,
+        label = f"PM Prep {i+1}"
+        shifts.append(BOHShift(label, 16*60+30, 22*60+30, PREP_COOK_WAGE, False,
                                break_start_min=0, break_end_min=0))
     return shifts
 
