@@ -1130,7 +1130,6 @@ header.masthead {{
     <div class="item"><span class="sw sw-front"></span>Opener / Rush / Peak / Mid</div>
     <div class="item"><span class="sw sw-closer"></span>Closer (dish + station)</div>
     <div class="item"><span class="sw sw-boh"></span>Cook</div>
-    <div class="item"><span class="sw sw-boh-mgr"></span>Cook (Mgr)</div>
     <div class="item"><span class="sw sw-unfilled"></span>Unfilled / TBD (current week)</div>
   </div>
   <div class="group">
