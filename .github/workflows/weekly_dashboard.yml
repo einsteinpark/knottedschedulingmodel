@@ -42,19 +42,9 @@ jobs:
         run: |
           git config user.name  "knotted-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/ weekly_dashboard.html weekly_dashboard.pdf run_log.json || true
+          # GitHub Pages for this repo serves main branch root, so the dashboard
+          # must land at ./index.html (the file Pages actually publishes).
+          cp weekly_dashboard.html index.html
+          git add data/ weekly_dashboard.html weekly_dashboard.pdf index.html run_log.json || true
           git commit -m "weekly auto-refresh $(date -u +%F)" || echo "nothing to commit"
           git push || echo "nothing to push"
-
-      - name: Stage Pages output
-        run: |
-          mkdir -p public
-          cp weekly_dashboard.html public/index.html
-          [ -f weekly_dashboard.pdf ] && cp weekly_dashboard.pdf public/ || true
-
-      # Publishes the dashboard as index.html on GitHub Pages (gh-pages branch).
-      - name: Publish to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
