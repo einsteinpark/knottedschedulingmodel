@@ -640,6 +640,61 @@ table.daily-summary.bs-accuracy th:not(:first-child) { text-align: right; }
   opacity: 0.7;
 }
 
+/* ---- Current-week labor outlook ---- */
+section.labor-outlook {
+  margin: 0 0 18px 0;
+  padding: 14px 18px;
+  background: #fbfaf7;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--closer, #7a5c3e);
+  border-radius: 6px;
+}
+.labor-outlook .labor-scroll { overflow-x: auto; }
+table.labor-table { width: 100%; min-width: 640px; }
+table.labor-table td.day-cell .proj-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  background: rgba(0,0,0,0.05);
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-left: 4px;
+}
+.blended-outlook {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+.blended-card {
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+.blended-card .bl-k {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+.blended-card .bl-v {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.blended-card .bl-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+
 </style></head>
 <body>
 <nav class="tabs" role="tablist">
@@ -1501,6 +1556,41 @@ table.daily-summary.bs-accuracy th:not(:first-child) { text-align: right; }
   </table>
   <div class="acc-note">Locked projection frozen at roll-over (forward → current). The schedule below reflects the live 4-week-weighted model and may differ.</div><div class="acc-note">Auto-calibration: <strong class="delta-up">+3.7%</strong> applied to not-yet-completed days, learned from the 1 finalized day(s) (damped 50%, capped ±15%). Updates automatically as you add each day to <code>actuals.csv</code>.</div>
 </section>
+
+<section class="labor-outlook">
+  <div class="acc-title">Current Week — Labor: Projected vs Actual (hourly FOH + BOH)</div>
+  <div class="labor-scroll">
+  <table class="daily-summary accuracy labor-table">
+    <thead><tr>
+      <th>Day</th>
+      <th>Proj FOH $</th><th>Act FOH $</th>
+      <th>Proj BOH $</th><th>Act BOH $</th>
+      <th>Proj Labor $</th><th>Δ $</th><th>Δ %</th>
+      <th>Labor %</th>
+    </tr></thead>
+    <tbody>
+<tr><td class="day-cell">Mon 8/10</td><td class="num">$572</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$696</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$1,268</td><td class="num pending">—</td><td class="num pending">—</td><td class="num delta-down">35.1%</td></tr><tr><td class="day-cell">Tue 8/11 <span class="proj-tag">proj</span></td><td class="num">$572</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$696</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$1,268</td><td class="num pending">—</td><td class="num pending">—</td><td class="num delta-down">31.2%</td></tr><tr><td class="day-cell">Wed 8/12 <span class="proj-tag">proj</span></td><td class="num">$572</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$528</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$1,100</td><td class="num pending">—</td><td class="num pending">—</td><td class="num delta-down">31.9%</td></tr><tr><td class="day-cell">Thu 8/13 <span class="proj-tag">proj</span></td><td class="num">$572</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$648</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$1,220</td><td class="num pending">—</td><td class="num pending">—</td><td class="num delta-down">33.1%</td></tr><tr><td class="day-cell">Fri 8/14 <span class="proj-tag">proj</span></td><td class="num">$824</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$768</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$1,592</td><td class="num pending">—</td><td class="num pending">—</td><td class="num delta-down">29.7%</td></tr><tr><td class="day-cell">Sat 8/15 <span class="proj-tag">proj</span></td><td class="num">$978</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$768</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$1,746</td><td class="num pending">—</td><td class="num pending">—</td><td class="num delta-up">24.2%</td></tr><tr><td class="day-cell">Sun 8/16 <span class="proj-tag">proj</span></td><td class="num">$889</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$528</td><td class="num strong"><span class="pending">pending</span></td><td class="num">$1,417</td><td class="num pending">—</td><td class="num pending">—</td><td class="num delta-up">21.8%</td></tr>
+<tr class="wtd-row"><td class="day-cell">Projected week</td><td class="num">$4,978</td><td class="num"></td><td class="num">$4,632</td><td class="num"></td><td class="num">$9,610</td><td class="num"></td><td class="num"></td><td class="num">28.6%</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="blended-outlook">
+    <div class="blended-card">
+      <div class="bl-k">Revenue — up-to-date</div>
+      <div class="bl-v">$33,890</div>
+      <div class="bl-meta">Projected $33,639 ·
+        <span class="delta-up">+251 (+0.7%)</span></div>
+    </div>
+    <div class="blended-card">
+      <div class="bl-k">Total labor % — up-to-date</div>
+      <div class="bl-v">28.4%</div>
+      <div class="bl-meta">Projected 28.6% ·
+        <span class="delta-up">-0.2 pp</span> · target 25%</div>
+    </div>
+  </div>
+  <div class="acc-note">Up-to-date = actual on realized days + projection on the rest. Actual FOH/BOH $ populate from Toast clock-in (Barista/Cashier → FOH, Production Cook → BOH) once the Labor scope is enabled; until then labor reflects the projected/scheduled cost. Manager salary is excluded here.</div>
+</section>
 <section class="projection-summary">
   <div class="proj-block proj-factors">
     <div class="proj-block-title">Projected Weekly Sales — Driver factors</div>
@@ -1907,6 +1997,7 @@ table.daily-summary.bs-accuracy th:not(:first-child) { text-align: right; }
   <h1>Knotted AD <em>— Forward Projection</em></h1>
   <div class="sub">Projected upcoming week &middot; Mon Aug 17 – Sun Aug 23, 2026</div>
 </header>
+
 
 <section class="projection-summary">
   <div class="proj-block proj-factors">
