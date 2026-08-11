@@ -73,31 +73,17 @@ class BOHShift:
 
 def boh_shifts_for_day(dow: int) -> List[BOHShift]:
     """
-    2 cooks 7:00am-3:30pm. Manager covers cook #1 Wed-Sun.
-
-    Break pattern (fixed, independent of FOH):
-      - Manager works (Wed-Sun): only the hourly cook takes a break at 8:00-8:30am.
-        Manager takes no break (salaried; can step away ad-hoc as needed).
-      - Manager off (Mon-Tue): both hourly cooks take breaks.
-        Cook 1 at 8:00-8:30am, Cook 2 at 8:30-9:00am (staggered).
+    Two hourly cooks 7:00am-3:30pm every day. No BOH manager coverage on the cook
+    shifts (operator, 2026-08): both cook slots are paid hourly — Cook 1 $20,
+    Cook 2 $25. Staggered breaks (8:00-8:30 and 8:30-9:00). Plus 2x PM prep.
     """
     start = 7 * 60
     end = 15 * 60 + 30
-    manager_works = dow in config.BOH_MANAGER_DAYS_OF_WEEK
     shifts: List[BOHShift] = []
-    if manager_works:
-        # Manager: no break
-        shifts.append(BOHShift("Cook (Mgr)", start, end, 0.0, True,
-                               break_start_min=0, break_end_min=0))
-        # Hourly cook: break at 8:00am
-        shifts.append(BOHShift("Cook", start, end, config.AVG_BOH_WAGE, False,
-                               break_start_min=8*60, break_end_min=8*60+30))
-    else:
-        # Mon/Tue: both hourly. Staggered breaks at 8:00 and 8:30.
-        shifts.append(BOHShift("Cook 1", start, end, config.AVG_BOH_WAGE, False,
-                               break_start_min=8*60, break_end_min=8*60+30))
-        shifts.append(BOHShift("Cook 2", start, end, config.AVG_BOH_WAGE, False,
-                               break_start_min=8*60+30, break_end_min=9*60))
+    shifts.append(BOHShift("Cook 1", start, end, 20.0, False,
+                           break_start_min=8*60, break_end_min=8*60+30))
+    shifts.append(BOHShift("Cook 2", start, end, 25.0, False,
+                           break_start_min=8*60+30, break_end_min=9*60))
     # Baseline PM prep: 4:30pm-10:30pm at $20/hr, TWO every day (operator, 2026-08).
     # 6.0hr shift -> no meal break (<=6hr) -> 6.0 paid hrs = $120 each.
     pm_prep_count = 2
@@ -123,7 +109,7 @@ def current_week_extra_boh(dow: int) -> List[BOHShift]:
 # window) — they're listed and costed only. end_min encodes 6:30am next day as
 # minutes past the shift's own midnight (22:00 + 8.5h) so cost/paid_hours are
 # correct; display uses a fixed overnight label.
-DONUT_PREP_WAGE = 20.0
+DONUT_PREP_WAGE = 19.0
 
 def _overnight_hm(minutes: int) -> str:
     """Format minutes-past-midnight (may exceed 1440 for overnight) as e.g. 10:00p."""
