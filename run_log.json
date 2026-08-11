@@ -1,5 +1,5 @@
 {
-  "ran_at": "2026-08-11T21:43:51",
+  "ran_at": "2026-08-11T22:26:39",
   "toast": {
     "orders": 9298,
     "days": [
@@ -41,6 +41,12 @@
       "2026-08-10"
     ],
     "net_total": 175641.95
+  },
+  "toast_labor": {
+    "days": 1,
+    "foh_cost": 630.78,
+    "boh_cost": 897.14,
+    "total_hours": 76.1
   },
   "sevenshifts": {
     "days": 7,
