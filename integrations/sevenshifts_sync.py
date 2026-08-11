@@ -87,9 +87,15 @@ def scheduled_hours_by_day(start: date, end: date) -> Dict[date, float]:
     return dict(by_day)
 
 
-def write_actual_labor(data_dir: Path, start: date, end: date) -> dict:
+def write_scheduled_labor(data_dir: Path, start: date, end: date,
+                          filename: str = "scheduled_labor.csv") -> dict:
+    """Write 7shifts SCHEDULED hours per day to scheduled_labor.csv.
+
+    7shifts is our scheduling system; actualized labor $ comes from Toast
+    clock-in (see integrations/toast_labor_sync.py). This is kept separate so
+    the two never overwrite each other."""
     hours = scheduled_hours_by_day(start, end)
-    path = data_dir / "actual_labor.csv"
+    path = data_dir / filename
     with path.open("w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["date", "scheduled_hours"])

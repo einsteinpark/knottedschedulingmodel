@@ -239,12 +239,15 @@ def actual_labor_by_date(uploads_dir: Path) -> Dict[date, Dict[str, float]]:
                 continue
             foh_cost = _num(r, "foh_cost")
             boh_cost = _num(r, "boh_cost")
+            total_hours = _num(r, "total_hours")
+            if total_hours is None:
+                total_hours = _num(r, "scheduled_hours")  # legacy column name
             out[d] = {
                 "foh_hours": _num(r, "foh_hours"),
                 "boh_hours": _num(r, "boh_hours"),
                 "foh_cost": foh_cost,
                 "boh_cost": boh_cost,
-                "total_hours": _num(r, "scheduled_hours"),
+                "total_hours": total_hours,
                 "has_split": foh_cost is not None or boh_cost is not None,
             }
     return out

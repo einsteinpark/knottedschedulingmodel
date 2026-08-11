@@ -55,14 +55,24 @@ def run(args) -> dict:
         print(f"[toast] {summary['toast']['orders']} orders, "
               f"net ${summary['toast']['net_total']:,.2f} across "
               f"{len(summary['toast']['days'])} days")
+        # 1b) Toast clock-in -> actualized labor (FOH/BOH split, costed).
+        # Best-effort: needs the LABOR scope; a failure must not sink the run.
+        try:
+            from integrations import toast_labor_sync
+            summary["toast_labor"] = toast_labor_sync.write_actual_labor(
+                DATA, week_start, yesterday)
+            print(f"[toast-labor] {summary['toast_labor']}")
+        except Exception as e:
+            print(f"[toast-labor] skipped: {e}")
     else:
         print("[toast] skipped (using existing CSVs)")
 
-    # 2) 7shifts -> actual labor (optional)
+    # 2) 7shifts -> SCHEDULED labor (optional). Scheduling only — actual labor
+    #    comes from Toast clock-in above; kept in a separate file.
     if args.with_7shifts:
         from integrations import sevenshifts_sync
         last_mon = week_start - timedelta(days=7)
-        summary["sevenshifts"] = sevenshifts_sync.write_actual_labor(
+        summary["sevenshifts"] = sevenshifts_sync.write_scheduled_labor(
             DATA, last_mon, last_mon + timedelta(days=6))
         print(f"[7shifts] {summary['sevenshifts']}")
 
