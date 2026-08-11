@@ -641,6 +641,20 @@ def _render_labor_outlook(
         f'<td class="num"></td><td class="num"></td>'
         f'<td class="num">{proj_pct:.1f}%</td></tr>'
     )
+    # Rolling week = actual labor on closed days + projected labor on the rest.
+    # Below the projected week (negative delta) is favorable.
+    roll_delta = blended_labor - proj_labor_sum
+    roll_delta_pct = (roll_delta / proj_labor_sum * 100) if proj_labor_sum else 0.0
+    roll_cls = "delta-up" if roll_delta <= 0 else "delta-down"  # under projection = green
+    rolling_footer = (
+        f'<tr class="wtd-row rolling-row"><td class="day-cell">Rolling week (act + proj)</td>'
+        f'<td class="num"></td><td class="num"></td>'
+        f'<td class="num"></td><td class="num"></td>'
+        f'<td class="num strong">{money(blended_labor)}</td>'
+        f'<td class="num {roll_cls}">{roll_delta:+,.0f}</td>'
+        f'<td class="num {roll_cls}">{roll_delta_pct:+.1f}%</td>'
+        f'<td class="num">{blended_pct:.1f}%</td></tr>'
+    )
 
     rev_dcls = "delta-up" if rev_delta >= 0 else "delta-down"
     pct_dcls = "delta-up" if pct_delta <= 0 else "delta-down"  # lower labor% = green
@@ -665,6 +679,7 @@ def _render_labor_outlook(
     <tbody>
 {rows}
 {footer}
+{rolling_footer}
     </tbody>
   </table>
   </div>
@@ -683,7 +698,10 @@ def _render_labor_outlook(
         <span class="{pct_dcls}">{pct_delta:+.1f} pp</span> · target {target_pct:.0f}%</div>
     </div>
   </div>
-  <div class="acc-note">Up-to-date = actual on realized days + projection on the rest. {note}</div>
+  <div class="acc-note">Rolling week = actual labor on closed days + projected labor on the
+  remaining days; <strong>below the Projected week (green) means you're tracking under plan</strong>.
+  The blended cards apply the same actual-so-far + projected-rest logic to revenue and labor %.
+  {note}</div>
 </section>"""
 
 
