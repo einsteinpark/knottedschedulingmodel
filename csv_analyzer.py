@@ -206,6 +206,50 @@ def actual_sales_by_date(uploads_dir: Path) -> Dict[date, float]:
     return out
 
 
+def actual_labor_by_date(uploads_dir: Path) -> Dict[date, Dict[str, float]]:
+    """Actualized labor per day from actual_labor.csv.
+
+    Supports two formats:
+      - Legacy: date, scheduled_hours          (7shifts scheduled hours only)
+      - Enriched: date, foh_hours, foh_cost, boh_hours, boh_cost, scheduled_hours
+        (Toast clock-in, split FOH=Barista/Cashier vs BOH=Production Cook, costed)
+
+    Returns {date: {foh_cost, boh_cost, foh_hours, boh_hours, total_hours,
+    has_split}}. `has_split` is True only when FOH/BOH dollar figures are present,
+    which is what the dashboard needs to show actual-vs-projected labor."""
+    out: Dict[date, Dict[str, float]] = {}
+    path = uploads_dir / "actual_labor.csv"
+    if not path.exists():
+        return out
+
+    def _num(row, key):
+        v = row.get(key)
+        if v is None or str(v).strip() == "":
+            return None
+        try:
+            return float(v)
+        except ValueError:
+            return None
+
+    with path.open() as f:
+        for r in csv.DictReader(f):
+            try:
+                d = date.fromisoformat(r["date"].strip())
+            except (KeyError, ValueError, AttributeError):
+                continue
+            foh_cost = _num(r, "foh_cost")
+            boh_cost = _num(r, "boh_cost")
+            out[d] = {
+                "foh_hours": _num(r, "foh_hours"),
+                "boh_hours": _num(r, "boh_hours"),
+                "foh_cost": foh_cost,
+                "boh_cost": boh_cost,
+                "total_hours": _num(r, "scheduled_hours"),
+                "has_split": foh_cost is not None or boh_cost is not None,
+            }
+    return out
+
+
 def build_projection_from_csvs(
     files: TastFiles,
 ) -> Tuple[Dict[Tuple[int, int], HourlyProjection], OutlierReport, Dict[str, float]]:

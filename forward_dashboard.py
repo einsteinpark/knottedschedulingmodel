@@ -81,6 +81,7 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
     week_foh_shift_count = 0
     week_boh_shift_count = 0
     day_blocks: List[str] = []
+    per_day_labor: List[dict] = []   # per-day projected FOH/BOH $ + sales, for the labor outlook
 
     # Quick lookup for pinch points by (date, hour)
     pinch_lookup: Dict[Tuple[date, int], PinchPoint] = {
@@ -120,6 +121,10 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
 
         day_sales = sum(adj_sales.values())
         baseline_sales = sum(projection[(d, h)].historical_sales for h in range(6, 24))
+        per_day_labor.append({
+            "date": d, "dow": dow, "proj_sales": day_sales,
+            "proj_foh": foh_cost, "proj_boh": boh_cost,
+        })
         day_blocks.append(_render_day_block(
             d, dow, shifts, boh, adj_orders, adj_sales,
             day_sales, baseline_sales, projection,
@@ -442,12 +447,22 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
         except Exception as _e:
             accuracy_section_html = ""
 
+    # ---- Labor & blended outlook (current week only) ----
+    labor_section_html = ""
+    if is_current:
+        try:
+            labor_section_html = _render_labor_outlook(
+                week_dates, per_day_labor, uploads_dir, total_sales, week_labor)
+        except Exception:
+            labor_section_html = ""
+
     return f"""
 <header class="masthead">
   <h1>Knotted AD <em>— {masthead_title}</em></h1>
   <div class="sub">{masthead_sub} &middot; {week_range}</div>
 </header>
 {accuracy_section_html}
+{labor_section_html}
 <section class="projection-summary">
   <div class="proj-block proj-factors">
     <div class="proj-block-title">Projected Weekly Sales — Driver factors</div>
@@ -525,6 +540,151 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
 
 {days_html}
 """
+
+
+def _render_labor_outlook(
+    week_dates: List[date],
+    per_day_labor: List[dict],
+    uploads_dir: Path,
+    total_proj_sales: float,
+    week_labor_incl_mgr: float,
+) -> str:
+    """Current-week labor + blended outlook.
+
+    Per day: projected FOH$ / BOH$ / total hourly labor$, the actualized FOH$/BOH$
+    (from Toast clock-in once available; 'pending' until then), labor$ delta, and an
+    up-to-date labor% (vs actual sales on realized days, projected on the rest).
+    Then a blended outlook: pure projection vs actual-so-far + projected-remainder,
+    for both revenue and total-labor%.
+    Manager salary is excluded here (it's salaried, shown separately in the summary).
+    """
+    from csv_analyzer import actual_sales_by_date, actual_labor_by_date
+    act_sales = actual_sales_by_date(uploads_dir)
+    act_labor = actual_labor_by_date(uploads_dir)
+    pd_by_date = {p["date"]: p for p in per_day_labor}
+    target_pct = config.LABOR_TARGET_PCT * 100
+
+    def money(x: float) -> str:
+        return f"${x:,.0f}"
+
+    rows = ""
+    proj_foh_sum = proj_boh_sum = proj_labor_sum = proj_sales_sum = 0.0
+    blended_sales = blended_labor = 0.0
+    any_actual_labor = False
+
+    for d in week_dates:
+        p = pd_by_date.get(d, {})
+        proj_foh = p.get("proj_foh", 0.0)
+        proj_boh = p.get("proj_boh", 0.0)
+        proj_sales = p.get("proj_sales", 0.0)
+        proj_labor = proj_foh + proj_boh
+        proj_foh_sum += proj_foh
+        proj_boh_sum += proj_boh
+        proj_labor_sum += proj_labor
+        proj_sales_sum += proj_sales
+
+        d_label = f"{DAY_NAMES_SHORT[d.weekday()]} {d.month}/{d.day}"
+        a_sales = act_sales.get(d)
+        completed = a_sales is not None
+        al = act_labor.get(d) or {}
+        a_foh = al.get("foh_cost")
+        a_boh = al.get("boh_cost")
+        has_al = bool(al.get("has_split")) and completed
+
+        blended_sales += a_sales if completed else proj_sales
+        if has_al:
+            a_labor = (a_foh or 0.0) + (a_boh or 0.0)
+            blended_labor += a_labor
+            any_actual_labor = True
+        else:
+            blended_labor += proj_labor
+
+        foh_act_cell = money(a_foh) if (has_al and a_foh is not None) else '<span class="pending">pending</span>'
+        boh_act_cell = money(a_boh) if (has_al and a_boh is not None) else '<span class="pending">pending</span>'
+
+        if has_al:
+            a_labor = (a_foh or 0.0) + (a_boh or 0.0)
+            dl = a_labor - proj_labor
+            dlp = (dl / proj_labor * 100) if proj_labor else 0.0
+            dcls = "delta-up" if dl <= 0 else "delta-down"  # under projection = green
+            delta_cells = f'<td class="num {dcls}">{dl:+,.0f}</td><td class="num {dcls}">{dlp:+.1f}%</td>'
+            labor_pct = (a_labor / a_sales * 100) if a_sales else 0.0
+        else:
+            delta_cells = '<td class="num pending">—</td><td class="num pending">—</td>'
+            denom = a_sales if (completed and a_sales) else proj_sales
+            labor_pct = (proj_labor / denom * 100) if denom else 0.0
+
+        pct_cls = "delta-up" if labor_pct <= target_pct else "delta-down"
+        realized_tag = "" if completed else ' <span class="proj-tag">proj</span>'
+        rows += (
+            f'<tr><td class="day-cell">{d_label}{realized_tag}</td>'
+            f'<td class="num">{money(proj_foh)}</td>'
+            f'<td class="num strong">{foh_act_cell}</td>'
+            f'<td class="num">{money(proj_boh)}</td>'
+            f'<td class="num strong">{boh_act_cell}</td>'
+            f'<td class="num">{money(proj_labor)}</td>'
+            f'{delta_cells}'
+            f'<td class="num {pct_cls}">{labor_pct:.1f}%</td></tr>'
+        )
+
+    proj_pct = (proj_labor_sum / proj_sales_sum * 100) if proj_sales_sum else 0.0
+    blended_pct = (blended_labor / blended_sales * 100) if blended_sales else 0.0
+    rev_delta = blended_sales - proj_sales_sum
+    rev_delta_pct = (rev_delta / proj_sales_sum * 100) if proj_sales_sum else 0.0
+    pct_delta = blended_pct - proj_pct
+
+    footer = (
+        f'<tr class="wtd-row"><td class="day-cell">Projected week</td>'
+        f'<td class="num">{money(proj_foh_sum)}</td><td class="num"></td>'
+        f'<td class="num">{money(proj_boh_sum)}</td><td class="num"></td>'
+        f'<td class="num">{money(proj_labor_sum)}</td>'
+        f'<td class="num"></td><td class="num"></td>'
+        f'<td class="num">{proj_pct:.1f}%</td></tr>'
+    )
+
+    rev_dcls = "delta-up" if rev_delta >= 0 else "delta-down"
+    pct_dcls = "delta-up" if pct_delta <= 0 else "delta-down"  # lower labor% = green
+    note = (
+        "Actual FOH/BOH $ populate from Toast clock-in (Barista/Cashier → FOH, "
+        "Production Cook → BOH) once the Labor scope is enabled; until then labor "
+        "reflects the projected/scheduled cost. Manager salary is excluded here."
+    )
+
+    return f"""
+<section class="labor-outlook">
+  <div class="acc-title">Current Week — Labor: Projected vs Actual (hourly FOH + BOH)</div>
+  <div class="labor-scroll">
+  <table class="daily-summary accuracy labor-table">
+    <thead><tr>
+      <th>Day</th>
+      <th>Proj FOH $</th><th>Act FOH $</th>
+      <th>Proj BOH $</th><th>Act BOH $</th>
+      <th>Proj Labor $</th><th>Δ $</th><th>Δ %</th>
+      <th>Labor %</th>
+    </tr></thead>
+    <tbody>
+{rows}
+{footer}
+    </tbody>
+  </table>
+  </div>
+
+  <div class="blended-outlook">
+    <div class="blended-card">
+      <div class="bl-k">Revenue — up-to-date</div>
+      <div class="bl-v">{money(blended_sales)}</div>
+      <div class="bl-meta">Projected {money(proj_sales_sum)} ·
+        <span class="{rev_dcls}">{rev_delta:+,.0f} ({rev_delta_pct:+.1f}%)</span></div>
+    </div>
+    <div class="blended-card">
+      <div class="bl-k">Total labor % — up-to-date</div>
+      <div class="bl-v">{blended_pct:.1f}%</div>
+      <div class="bl-meta">Projected {proj_pct:.1f}% ·
+        <span class="{pct_dcls}">{pct_delta:+.1f} pp</span> · target {target_pct:.0f}%</div>
+    </div>
+  </div>
+  <div class="acc-note">Up-to-date = actual on realized days + projection on the rest. {note}</div>
+</section>"""
 
 
 def _render_day_block(
@@ -1083,5 +1243,60 @@ table.daily-summary.bs-accuracy th:not(:first-child) { text-align: right; }
   font-weight: 400;
   margin-left: 3px;
   opacity: 0.7;
+}
+
+/* ---- Current-week labor outlook ---- */
+section.labor-outlook {
+  margin: 0 0 18px 0;
+  padding: 14px 18px;
+  background: #fbfaf7;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--closer, #7a5c3e);
+  border-radius: 6px;
+}
+.labor-outlook .labor-scroll { overflow-x: auto; }
+table.labor-table { width: 100%; min-width: 640px; }
+table.labor-table td.day-cell .proj-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  background: rgba(0,0,0,0.05);
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-left: 4px;
+}
+.blended-outlook {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+.blended-card {
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+.blended-card .bl-k {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+.blended-card .bl-v {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.blended-card .bl-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 2px;
 }
 """
