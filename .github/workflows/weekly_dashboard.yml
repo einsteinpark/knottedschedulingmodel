@@ -34,10 +34,8 @@ jobs:
           SEVENSHIFTS_API_KEY:     ${{ secrets.SEVENSHIFTS_API_KEY }}
           SEVENSHIFTS_COMPANY_ID:  ${{ secrets.SEVENSHIFTS_COMPANY_ID }}
           SEVENSHIFTS_LOCATION_ID: ${{ secrets.SEVENSHIFTS_LOCATION_ID }}
-          IG_USER_ID:      ${{ secrets.IG_USER_ID }}
-          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
         run: |
-          python run_weekly.py --with-7shifts --with-social
+          python run_weekly.py --with-7shifts
 
       - name: Commit refreshed data + dashboard
         run: |
