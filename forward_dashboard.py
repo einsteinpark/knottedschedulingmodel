@@ -98,7 +98,8 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
             day_schedule(dow, week_config.extra_foh_shifts, week_config.base_foh_overrides), dow,
             daily_proj, adj_orders, adj_sales,
         )
-        boh = boh_shifts_for_day(dow)
+        # Current + forward weeks run 2x PM prep every day (baseline is 1/2).
+        boh = boh_shifts_for_day(dow, pm_prep_override=2)
         if week_config.label == "current week":
             from weekly_dashboard import current_week_extra_boh
             boh = boh + current_week_extra_boh(dow)
