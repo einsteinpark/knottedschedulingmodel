@@ -274,7 +274,7 @@ GENERATE_FOR_WEEKS_AHEAD = 1      # how many weeks into the future to schedule
 
 
 # Wages — set to your actual numbers (would normally come from 7shifts)
-AVG_FOH_WAGE = 21.00
+AVG_FOH_WAGE = 23.00
 AVG_BOH_WAGE = 21.00
 CA_OT_DAILY_THRESHOLD   = 8.0     # >8 hrs/day = 1.5x
 CA_DT_DAILY_THRESHOLD   = 12.0    # >12 hrs/day = 2.0x

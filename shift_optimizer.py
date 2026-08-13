@@ -29,11 +29,11 @@ import config
 from csv_analyzer import build_projection_from_csvs, TastFiles
 
 
-# Wage tiers for FOH staff. Blended to a flat $21 for all FOH (operator, 2026-08);
+# Wage tiers for FOH staff. Blended to a flat $23 for all FOH (operator, 2026-08);
 # tier labels are retained for display but every FOH shift costs the same rate.
-WAGE_JR = 21.00
-WAGE_MD = 21.00
-WAGE_SR = 21.00
+WAGE_JR = 23.00
+WAGE_MD = 23.00
+WAGE_SR = 23.00
 
 
 @dataclass
