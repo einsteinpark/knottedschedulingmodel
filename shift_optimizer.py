@@ -229,9 +229,9 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
     1: None, 2: None, 3: None,
     # Fri (operator spec 2026-08).
     4: [
-        FOHShift("Opener",        _t(6, 30),  _t(12, 0),  WAGE_JR, 'jr'),   # 6:30a-12p
+        FOHShift("Opener",        _t(6, 30),  _t(12, 30), WAGE_JR, 'jr'),   # 6:30a-12:30p
         FOHShift("Mid-1",         _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
-        FOHShift("Mid-2",         _t(9, 0),   _t(16, 30), WAGE_MD, 'md'),   # 9a-4:30p (9a-3p removed; former 10a-6:30p pushed up per operator, 2026-08)
+        FOHShift("Mid-2",         _t(9, 0),   _t(15, 0),  WAGE_JR, 'jr'),   # 9a-3p
         FOHShift("Mid-3",         _t(11, 0),  _t(19, 30), WAGE_MD, 'md'),   # 11a-7:30p
         FOHShift("First Closer",  _t(16, 30), _t(22, 30), WAGE_MD, 'md'),   # 4:30p-10:30p
         FOHShift("Second Closer", _t(15, 0),  _t(23, 0),  WAGE_SR, 'sr'),   # 3p-11p
