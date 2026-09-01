@@ -283,11 +283,15 @@ CURRENT_WEEK_SHIFT_OVERRIDES: Dict[int, List[FOHShift]] = {}
 
 
 # ---------------------------------------------------------------------------
-# Forward-week extra coverage — CLEARED. These planned day-helpers (mostly
-# 8a-2p) are now redundant with the new baseline Second Opener (8a-2p), so
-# leaving them would double-count coverage. The new baseline applies to all tabs.
+# Forward-week extra coverage. Keyed by DOW within the FORWARD week.
+# NOTE: Mon 2026-09-07 is LABOR DAY (forward week Sep 7-13) — operator staffs it
+# like a weekend (extra 12p-6p mid, 6 FOH vs the normal 5). This is DOW-keyed,
+# so CLEAR it once the forward week rolls past Sep 7 (otherwise it would apply to
+# the next forward Monday, Sep 14).
 # ---------------------------------------------------------------------------
-FORWARD_WEEK_EXTRA_SHIFTS: Dict[int, List[FOHShift]] = {}
+FORWARD_WEEK_EXTRA_SHIFTS: Dict[int, List[FOHShift]] = {
+    0: [FOHShift("Mid-3", _t(12, 0), _t(18, 0), WAGE_JR, 'jr')],  # Labor Day 9/7: extra 12p-6p
+}
 
 
 def _copy_shift(s: "FOHShift") -> "FOHShift":
