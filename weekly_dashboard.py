@@ -126,18 +126,12 @@ def _overnight_hm(minutes: int) -> str:
     return f"{hh}:{mm:02d}{ampm}"
 
 def donut_prep_shifts(dow: int) -> List[BOHShift]:
-    # Donut Prep 1: 10:00pm-4:00am.  Donut Prep 2 (and 3 on Fri/Sat): 12:30am-
-    # 6:30am. Each a 6-hour span -> 5.5 paid hrs after a 30-min break @ $20 = $110.
-    shifts = [
-        BOHShift("Donut Prep 1", 22 * 60, 22 * 60 + 6 * 60,  # 10:00pm-4:00am
+    # Single overnight donut prep, 8-hour shift 10:00pm-6:00am every night
+    # (operator, 2026-08). >6hr span -> 0.5 CA meal break -> 7.5 paid hrs @ $19.
+    return [
+        BOHShift("Donut Prep", 22 * 60, 22 * 60 + 8 * 60,  # 10:00pm-6:00am
                  DONUT_PREP_WAGE, False, break_start_min=0, break_end_min=0),
     ]
-    late_count = 2 if dow in (4, 5) else 1   # Fri/Sat get a 3rd (second 12:30 shift)
-    for i in range(late_count):
-        shifts.append(
-            BOHShift(f"Donut Prep {i + 2}", 24 * 60 + 30, 24 * 60 + 30 + 6 * 60,  # 12:30am-6:30am
-                     DONUT_PREP_WAGE, False, break_start_min=0, break_end_min=0))
-    return shifts
 
 
 # ---------------------------------------------------------------------------
