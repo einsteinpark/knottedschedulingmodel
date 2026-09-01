@@ -244,7 +244,7 @@ MANUAL_IGNORE_DATES: List[str] = [
 # MANAGEMENT (salaried, fixed weekly cost regardless of schedule)
 # =============================================================================
 # Full annual salaries (what the managers are actually paid):
-FOH_MANAGER_ANNUAL_SALARY_FULL = 77500.0  # FOH manager - oversight, NOT in schedule
+FOH_MANAGER_ANNUAL_SALARY_FULL = 80000.0  # FOH manager - oversight, NOT in schedule
 BOH_MANAGER_ANNUAL_SALARY_FULL = 78000.0  # BOH manager - covers 5 cook shifts/wk
 
 # Salary allocation: both managers split their time between Cafe Knotted AD

@@ -242,6 +242,21 @@ CALENDAR_EVENTS: Dict[date, Dict] = {
         "blurb": "Sun Jul 5 — operator view: viral weekend lift still holds. Holiday "
                  "tail softness essentially removed (mild -1%). Lands ~$9.0k.",
     },
+    date(2026, 9, 7): {
+        "factors": [
+            ("Labor Day (Mon) - good-weather Monday holiday draws like a weekend "
+             "(weekend days run ~2x a normal Monday in the data)",
+             2.00, 2.00, "all"),
+        ],
+        "blurb": "Mon Sep 7 — LABOR DAY. Good-weather Monday holidays have historically "
+                 "drawn like another weekend. Weekend days run ~2x a normal Monday here "
+                 "(day-of-week data: Sat/Sun vs Mon), so applied a +100% all-day lift to "
+                 "bring Labor Day to weekend level (~$6k vs the ~$3k normal-Monday "
+                 "baseline). NOTE: the Monday roster is the normal 5-person weekday crew, "
+                 "so the coverage chart will flag a shortfall — staff Sep 7 like a "
+                 "weekend. RISK: if it behaves like a normal Monday it lands ~half; "
+                 "auto-calibration corrects once the day finalizes.",
+    },
 }
 
 
