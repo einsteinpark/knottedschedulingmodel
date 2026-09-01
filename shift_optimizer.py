@@ -271,27 +271,34 @@ for d in (1, 2, 3):
 
 
 # ---------------------------------------------------------------------------
-# Current-week-only extra coverage — CLEARED. The day-helpers are removed per
-# operator request; the new baseline roster (Second Opener + Rush-helper) now
-# carries that midday coverage directly.
+# Date-gated one-off holiday coverage.
+#
+# LABOR DAY (Mon 2026-09-07): operator staffs it like a weekend — one extra
+# 12p-6p mid (6 FOH vs the normal 5). This attaches to whichever rendered week
+# actually contains Sep 7 (the forward week now; the current week during the
+# holiday week) and AUTO-CLEARS once Sep 7 is in the past — no manual cleanup.
+# Add future holiday one-offs the same way: gate on the target Monday date.
 # ---------------------------------------------------------------------------
-CURRENT_WEEK_EXTRA_SHIFTS: Dict[int, List[FOHShift]] = {}
+_LABOR_DAY_2026 = date(2026, 9, 7)
 
-# Current-week-only base-roster overrides — CLEARED (the prior Thu override
-# retimed the old Rush-helper, which no longer exists in the new baseline).
+
+def _labor_day_extra() -> List["FOHShift"]:
+    return [FOHShift("Mid-3", _t(12, 0), _t(18, 0), WAGE_JR, 'jr')]  # 12p-6p
+
+
+_this_monday = config.current_week_start()          # Monday of the as-of week
+_forward_monday = _this_monday + timedelta(days=7)  # Monday of the forward week
+
+CURRENT_WEEK_EXTRA_SHIFTS: Dict[int, List[FOHShift]] = {}
+if _this_monday == _LABOR_DAY_2026:
+    CURRENT_WEEK_EXTRA_SHIFTS[0] = _labor_day_extra()
+
+# Current-week base-roster overrides — none.
 CURRENT_WEEK_SHIFT_OVERRIDES: Dict[int, List[FOHShift]] = {}
 
-
-# ---------------------------------------------------------------------------
-# Forward-week extra coverage. Keyed by DOW within the FORWARD week.
-# NOTE: Mon 2026-09-07 is LABOR DAY (forward week Sep 7-13) — operator staffs it
-# like a weekend (extra 12p-6p mid, 6 FOH vs the normal 5). This is DOW-keyed,
-# so CLEAR it once the forward week rolls past Sep 7 (otherwise it would apply to
-# the next forward Monday, Sep 14).
-# ---------------------------------------------------------------------------
-FORWARD_WEEK_EXTRA_SHIFTS: Dict[int, List[FOHShift]] = {
-    0: [FOHShift("Mid-3", _t(12, 0), _t(18, 0), WAGE_JR, 'jr')],  # Labor Day 9/7: extra 12p-6p
-}
+FORWARD_WEEK_EXTRA_SHIFTS: Dict[int, List[FOHShift]] = {}
+if _forward_monday == _LABOR_DAY_2026:
+    FORWARD_WEEK_EXTRA_SHIFTS[0] = _labor_day_extra()
 
 
 def _copy_shift(s: "FOHShift") -> "FOHShift":
