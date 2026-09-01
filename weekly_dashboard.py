@@ -73,9 +73,9 @@ class BOHShift:
 
 def boh_shifts_for_day(dow: int, pm_prep_override: Optional[int] = None) -> List[BOHShift]:
     """
-    Two hourly cooks 7:00am-3:30pm every day. No BOH manager coverage on the cook
-    shifts (operator, 2026-08): both cook slots are paid hourly — Cook 1 $20,
-    Cook 2 $25. Staggered breaks (8:00-8:30 and 8:30-9:00). Plus PM prep.
+    BOH morning crew 7:00am-3:30pm every day (operator, 2026-08): one AM Prep ($20)
+    and one AM Service ($25), both paid hourly, no manager coverage. Staggered
+    breaks (8:00-8:30 and 8:30-9:00). Plus PM prep (and overnight donut elsewhere).
 
     PM prep count: baseline = 1 Sun-Thu / 2 Fri-Sat. Projection weeks (current +
     forward) pass pm_prep_override=2 for 2x every day (near-term elevated prep).
@@ -83,9 +83,9 @@ def boh_shifts_for_day(dow: int, pm_prep_override: Optional[int] = None) -> List
     start = 7 * 60
     end = 15 * 60 + 30
     shifts: List[BOHShift] = []
-    shifts.append(BOHShift("Cook 1", start, end, 20.0, False,
+    shifts.append(BOHShift("AM Prep", start, end, 20.0, False,
                            break_start_min=8*60, break_end_min=8*60+30))
-    shifts.append(BOHShift("Cook 2", start, end, 25.0, False,
+    shifts.append(BOHShift("AM Service", start, end, 25.0, False,
                            break_start_min=8*60+30, break_end_min=9*60))
     # PM prep 4:30pm-10:30pm at $20/hr. Baseline = 1 Sun-Thu, 2 Fri/Sat; projection
     # weeks override to 2 every day. 6.0hr shift -> no meal break (<=6hr).
