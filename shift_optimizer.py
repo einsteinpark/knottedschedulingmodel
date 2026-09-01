@@ -252,9 +252,9 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
     6: [
         FOHShift("Opener",        _t(7, 0),   _t(13, 0),  WAGE_JR, 'jr'),   # 7a-1p
         FOHShift("Mid-1",         _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
-        FOHShift("Mid-2",         _t(8, 30),  _t(17, 0),  WAGE_MD, 'md'),   # 8:30a-5p
+        FOHShift("Mid-2",         _t(8, 30),  _t(14, 30), WAGE_JR, 'jr'),   # 8:30a-2:30p
         FOHShift("Mid-3",         _t(11, 0),  _t(19, 30), WAGE_MD, 'md'),   # 11a-7:30p
-        FOHShift("First Closer",  _t(12, 0),  _t(20, 30), WAGE_MD, 'md'),   # 12p-8:30p
+        FOHShift("First Closer",  _t(14, 30), _t(20, 30), WAGE_MD, 'md'),   # 2:30p-8:30p
         FOHShift("Second Closer", _t(12, 30), _t(21, 0),  WAGE_SR, 'sr'),   # 12:30p-9p
     ],
 }
