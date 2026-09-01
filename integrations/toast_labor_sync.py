@@ -163,3 +163,49 @@ def write_actual_labor(data_dir: Path, start: date, end: date) -> dict:
         "boh_cost": round(sum(r["boh_cost"] for r in by_day.values()), 2),
         "total_hours": round(sum(r["total_hours"] for r in by_day.values()), 1),
     }
+
+
+def _avg_wages(entries: List[dict], jobs: Dict[str, str]) -> dict:
+    """Pure: time entries -> hours-weighted average wage per position.
+    Returns {'foh_wage','boh_wage','foh_hours','boh_hours'} (wage None if no hrs)."""
+    agg = {"foh": [0.0, 0.0], "boh": [0.0, 0.0]}  # dept -> [wage*hours, hours]
+    for te in entries:
+        if te.get("deleted"):
+            continue
+        reg, ot = _entry_hours(te)
+        hrs = reg + ot
+        if hrs <= 0:
+            continue
+        jref = te.get("jobReference") or {}
+        jguid = jref.get("guid") if isinstance(jref, dict) else None
+        dept = _classify_job(jobs.get(jguid, ""))
+        wage = te.get("hourlyWage")
+        try:
+            wage = float(wage) if wage else None
+        except (TypeError, ValueError):
+            wage = None
+        if dept not in ("foh", "boh") or wage is None or wage <= 0:
+            continue
+        agg[dept][0] += wage * hrs
+        agg[dept][1] += hrs
+    out = {}
+    for dept in ("foh", "boh"):
+        wsum, hsum = agg[dept]
+        out[f"{dept}_wage"] = round(wsum / hsum, 2) if hsum else None
+        out[f"{dept}_hours"] = round(hsum, 1)
+    return out
+
+
+def derive_position_wages(start: date, end: date) -> dict:
+    """Rolling hours-weighted average hourly wage per position from Toast clock-in
+    over [start, end]. FOH = Barista/Cashier, BOH = Production Cook."""
+    host = _cfg("TOAST_HOSTNAME", required=True)
+    guid = _cfg("TOAST_RESTAURANT_GUID", required=True)
+    token = _get_token()
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Toast-Restaurant-External-ID": guid,
+    }
+    jobs = _fetch_jobs(host, headers)
+    entries = _fetch_time_entries(host, headers, start, end)
+    return _avg_wages(entries, jobs)

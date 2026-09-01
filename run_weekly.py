@@ -64,6 +64,26 @@ def run(args) -> dict:
             print(f"[toast-labor] {summary['toast_labor']}")
         except Exception as e:
             print(f"[toast-labor] skipped: {e}")
+
+        # 1c) Rolling 8-week blended wage per position from Toast clock-in ->
+        # data/derived_wages.json, which config loads on the next run (1-run lag).
+        try:
+            from integrations import toast_labor_sync as _tls
+            wage_start = yesterday - timedelta(days=55)  # ~8 weeks
+            w = _tls.derive_position_wages(wage_start, yesterday)
+            if w.get("foh_wage") or w.get("boh_wage"):
+                (DATA / "derived_wages.json").write_text(json.dumps({
+                    "foh_wage": w.get("foh_wage"),
+                    "boh_wage": w.get("boh_wage"),
+                    "window": [wage_start.isoformat(), yesterday.isoformat()],
+                    "foh_hours": w.get("foh_hours"),
+                    "boh_hours": w.get("boh_hours"),
+                }, indent=2))
+                summary["derived_wages"] = w
+                print(f"[wages] 8-wk blended FOH ${w.get('foh_wage')} / "
+                      f"BOH ${w.get('boh_wage')}")
+        except Exception as e:
+            print(f"[wages] skipped: {e}")
     else:
         print("[toast] skipped (using existing CSVs)")
 

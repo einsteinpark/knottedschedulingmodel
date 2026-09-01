@@ -29,11 +29,12 @@ import config
 from csv_analyzer import build_projection_from_csvs, TastFiles
 
 
-# Wage tiers for FOH staff. Blended to a flat $23 for all FOH (operator, 2026-08);
-# tier labels are retained for display but every FOH shift costs the same rate.
-WAGE_JR = 23.00
-WAGE_MD = 23.00
-WAGE_SR = 23.00
+# Wage tiers for FOH staff. All blended to the same FOH rate (config.AVG_FOH_WAGE,
+# the rolling 8-week Barista/Cashier average from Toast clock-in). Tier labels are
+# retained for display but every FOH shift costs the same rate.
+WAGE_JR = config.AVG_FOH_WAGE
+WAGE_MD = config.AVG_FOH_WAGE
+WAGE_SR = config.AVG_FOH_WAGE
 
 
 @dataclass

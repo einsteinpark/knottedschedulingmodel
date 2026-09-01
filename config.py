@@ -273,9 +273,32 @@ OUTPUT_DIR              = "/mnt/user-data/outputs"
 GENERATE_FOR_WEEKS_AHEAD = 1      # how many weeks into the future to schedule
 
 
-# Wages — set to your actual numbers (would normally come from 7shifts)
-AVG_FOH_WAGE = 23.00
-AVG_BOH_WAGE = 21.00
+# Wages — blended per-position hourly rates.
+# Defaults are the Jul-Aug 2026 payroll averages (FOH = Barista/Cashier,
+# BOH = Production Cook). Each run, run_weekly derives the rolling 8-week
+# average from Toast clock-in and writes data/derived_wages.json, which is
+# loaded here to override the defaults (falls back to defaults if absent).
+_DEFAULT_FOH_WAGE = 19.71
+_DEFAULT_BOH_WAGE = 20.36
+
+
+def _load_derived_wages():
+    import json
+    from pathlib import Path
+    foh, boh = _DEFAULT_FOH_WAGE, _DEFAULT_BOH_WAGE
+    try:
+        p = Path(__file__).resolve().parent / "data" / "derived_wages.json"
+        d = json.loads(p.read_text(encoding="utf-8-sig"))
+        if d.get("foh_wage"):
+            foh = float(d["foh_wage"])
+        if d.get("boh_wage"):
+            boh = float(d["boh_wage"])
+    except Exception:
+        pass
+    return round(foh, 2), round(boh, 2)
+
+
+AVG_FOH_WAGE, AVG_BOH_WAGE = _load_derived_wages()
 CA_OT_DAILY_THRESHOLD   = 8.0     # >8 hrs/day = 1.5x
 CA_DT_DAILY_THRESHOLD   = 12.0    # >12 hrs/day = 2.0x
 CA_OT_WEEKLY_THRESHOLD  = 40.0    # >40 hrs/week = 1.5x

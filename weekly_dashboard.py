@@ -83,9 +83,9 @@ def boh_shifts_for_day(dow: int, pm_prep_override: Optional[int] = None) -> List
     start = 7 * 60
     end = 15 * 60 + 30
     shifts: List[BOHShift] = []
-    shifts.append(BOHShift("AM Prep", start, end, 20.0, False,
+    shifts.append(BOHShift("AM Prep", start, end, config.AVG_BOH_WAGE, False,
                            break_start_min=8*60, break_end_min=8*60+30))
-    shifts.append(BOHShift("AM Service", start, end, 25.0, False,
+    shifts.append(BOHShift("AM Service", start, end, config.AVG_BOH_WAGE, False,
                            break_start_min=8*60+30, break_end_min=9*60))
     # PM prep 4:30pm-10:30pm at $20/hr. Baseline = 1 Sun-Thu, 2 Fri/Sat; projection
     # weeks override to 2 every day. 6.0hr shift -> no meal break (<=6hr).
@@ -103,7 +103,7 @@ def boh_shifts_for_day(dow: int, pm_prep_override: Optional[int] = None) -> List
 # Current-week-only BOH additions. The former temp prep cook (3pm-9pm) is now
 # superseded by the baseline PM Prep (4:00pm-10:30pm, in boh_shifts_for_day),
 # so this is empty to avoid double-counting PM prep on the current week.
-PREP_COOK_WAGE = 20.0
+PREP_COOK_WAGE = config.AVG_BOH_WAGE
 
 def current_week_extra_boh(dow: int) -> List[BOHShift]:
     return []
@@ -115,7 +115,7 @@ def current_week_extra_boh(dow: int) -> List[BOHShift]:
 # window) — they're listed and costed only. end_min encodes 6:30am next day as
 # minutes past the shift's own midnight (22:00 + 8.5h) so cost/paid_hours are
 # correct; display uses a fixed overnight label.
-DONUT_PREP_WAGE = 19.0
+DONUT_PREP_WAGE = config.AVG_BOH_WAGE
 
 def _overnight_hm(minutes: int) -> str:
     """Format minutes-past-midnight (may exceed 1440 for overnight) as e.g. 10:00p."""
