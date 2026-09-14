@@ -1,9 +1,8 @@
 {
-  "ran_at": "2026-09-13T17:09:14",
+  "ran_at": "2026-09-14T18:57:56",
   "toast": {
-    "orders": 8844,
+    "orders": 8731,
     "days": [
-      "2026-08-08",
       "2026-08-09",
       "2026-08-10",
       "2026-08-11",
@@ -38,25 +37,24 @@
       "2026-09-09",
       "2026-09-10",
       "2026-09-11",
-      "2026-09-12"
+      "2026-09-12",
+      "2026-09-13"
     ],
-    "net_total": 158290.3
+    "net_total": 155748.82
   },
   "toast_labor": {
-    "days": 6,
-    "foh_cost": 3779.57,
-    "boh_cost": 2197.83,
-    "total_hours": 310.3
+    "days": 0,
+    "note": "no completed days in range"
   },
   "derived_wages": {
     "foh_wage": 19.63,
-    "foh_hours": 1883.6,
+    "foh_hours": 1878.5,
     "boh_wage": 20.39,
-    "boh_hours": 1762.7
+    "boh_hours": 1757.0
   },
   "sevenshifts": {
     "days": 7,
-    "total_hours": 622.5
+    "total_hours": 602.0
   },
   "outputs": [
     "/home/runner/work/knottedschedulingmodel/knottedschedulingmodel/weekly_dashboard.html",
