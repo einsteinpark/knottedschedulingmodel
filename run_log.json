@@ -1,9 +1,8 @@
 {
-  "ran_at": "2026-10-27T19:07:44",
+  "ran_at": "2026-10-28T19:12:32",
   "toast": {
-    "orders": 7466,
+    "orders": 7425,
     "days": [
-      "2026-09-21",
       "2026-09-22",
       "2026-09-23",
       "2026-09-24",
@@ -38,21 +37,22 @@
       "2026-10-23",
       "2026-10-24",
       "2026-10-25",
-      "2026-10-26"
+      "2026-10-26",
+      "2026-10-27"
     ],
-    "net_total": 126730.14
+    "net_total": 125744.29
   },
   "toast_labor": {
-    "days": 1,
-    "foh_cost": 535.32,
-    "boh_cost": 573.59,
-    "total_hours": 56.1
+    "days": 2,
+    "foh_cost": 1098.81,
+    "boh_cost": 946.77,
+    "total_hours": 102.8
   },
   "derived_wages": {
     "foh_wage": 19.29,
-    "foh_hours": 1817.9,
-    "boh_wage": 20.99,
-    "boh_hours": 1399.4
+    "foh_hours": 1820.8,
+    "boh_wage": 21.0,
+    "boh_hours": 1391.0
   },
   "sevenshifts": {
     "days": 7,
