@@ -220,12 +220,11 @@ def relabel_shifts(shifts: List[FOHShift], close_min: int) -> List[FOHShift]:
 # the placeholder labels here are cosmetic). Wage tiers are PROVISIONAL pending
 # the operator pay-rate review: jr $19 / md $21 / sr $23.
 PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
-    # Mon-Thu (operator spec 2026-08).
+    # Mon-Thu (operator spec 2026-11).
     0: [
-        FOHShift("Opener",        _t(7, 0),   _t(12, 0),  WAGE_JR, 'jr'),   # 7a-12p
-        FOHShift("Mid-1",         _t(8, 0),   _t(13, 0),  WAGE_JR, 'jr'),   # 8a-1p
-        FOHShift("Mid-2",         _t(10, 30), _t(15, 30), WAGE_JR, 'jr'),   # 10:30a-3:30p
-        FOHShift("First Closer",  _t(15, 0),  _t(20, 30), WAGE_MD, 'md'),   # 3p-8:30p
+        FOHShift("Opener",        _t(7, 0),   _t(13, 0),  WAGE_JR, 'jr'),   # 7a-1p
+        FOHShift("Mid",           _t(8, 30),  _t(14, 30), WAGE_JR, 'jr'),   # 8:30a-2:30p
+        FOHShift("First Closer",  _t(14, 30), _t(20, 30), WAGE_MD, 'md'),   # 2:30p-8:30p (end assumed close+30)
         FOHShift("Second Closer", _t(12, 30), _t(21, 0),  WAGE_SR, 'sr'),   # 12:30p-9p
     ],
     1: None, 2: None, 3: None,
@@ -234,16 +233,15 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
         FOHShift("Opener",        _t(7, 0),   _t(12, 0),  WAGE_JR, 'jr'),   # 7a-12p
         FOHShift("Mid-1",         _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
         FOHShift("Mid-2",         _t(9, 0),   _t(15, 0),  WAGE_JR, 'jr'),   # 9a-3p
-        FOHShift("Mid-3",         _t(11, 0),  _t(17, 0),  WAGE_MD, 'md'),   # 11a-5p
-        FOHShift("First Closer",  _t(16, 30), _t(22, 30), WAGE_MD, 'md'),   # 4:30p-10:30p
-        FOHShift("Second Closer", _t(15, 0),  _t(23, 0),  WAGE_SR, 'sr'),   # 3p-11p
+        FOHShift("Mid-3",         _t(12, 0),  _t(18, 0),  WAGE_MD, 'md'),   # 12p-6p
+        FOHShift("First Closer",  _t(17, 30), _t(22, 30), WAGE_MD, 'md'),   # 5:30p-10:30p
+        FOHShift("Second Closer", _t(15, 0),  _t(23, 0),  WAGE_SR, 'sr', pinned_break_start_min=_t(17, 30)),   # 3p-11p, break 5:30p
     ],
     # Sat (operator spec 2026-08).
     5: [
         FOHShift("Opener",        _t(7, 0),   _t(13, 0),  WAGE_JR, 'jr'),   # 7a-1p
         FOHShift("Mid-1",         _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
-        FOHShift("Mid-2",         _t(8, 30),  _t(14, 30), WAGE_JR, 'jr'),   # 8:30a-2:30p
-        FOHShift("Mid-3",         _t(9, 0),   _t(15, 0),  WAGE_JR, 'jr'),   # 9a-3p
+        FOHShift("Mid-3",         _t(9, 0),   _t(15, 0),  WAGE_JR, 'jr'),   # 9a-3p (Sat Mid-2 8:30-2:30 removed per operator 2026-11; relabel renumbers)
         FOHShift("Mid-4",         _t(11, 0),  _t(16, 30), WAGE_MD, 'md'),   # 11a-4:30p
         FOHShift("Mid-5",         _t(14, 0),  _t(20, 0),  WAGE_MD, 'md'),   # 2p-8p
         FOHShift("First Closer",  _t(16, 30), _t(22, 30), WAGE_MD, 'md'),   # 4:30p-10:30p
@@ -251,10 +249,10 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
     ],
     # Sun (operator spec 2026-08).
     6: [
-        FOHShift("Opener",        _t(7, 0),   _t(13, 0),  WAGE_JR, 'jr'),   # 7a-1p
+        FOHShift("Opener",        _t(7, 0),   _t(12, 0),  WAGE_JR, 'jr'),   # 7a-12p
         FOHShift("Mid-1",         _t(8, 0),   _t(14, 0),  WAGE_JR, 'jr'),   # 8a-2p
         FOHShift("Mid-2",         _t(8, 30),  _t(14, 30), WAGE_JR, 'jr'),   # 8:30a-2:30p
-        FOHShift("Mid-3",         _t(11, 0),  _t(19, 30), WAGE_MD, 'md'),   # 11a-7:30p
+        FOHShift("Mid-3",         _t(12, 0),  _t(18, 0),  WAGE_MD, 'md'),   # 12p-6p
         FOHShift("First Closer",  _t(14, 30), _t(20, 30), WAGE_MD, 'md'),   # 2:30p-8:30p
         FOHShift("Second Closer", _t(12, 30), _t(21, 0),  WAGE_SR, 'sr'),   # 12:30p-9p
     ],
