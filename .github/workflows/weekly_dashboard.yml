@@ -22,8 +22,14 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install wkhtmltopdf (for PDF export)
-        run: sudo apt-get update && sudo apt-get install -y wkhtmltopdf
+      # Optional: wkhtmltopdf is only used for the PDF export. It is no longer
+      # packaged on newer ubuntu-latest images (Ubuntu 26+), so this must NOT be
+      # fatal -- run_weekly.py already skips the PDF gracefully and still renders
+      # the HTML dashboard, which is what gets published.
+      - name: Install wkhtmltopdf (optional, for PDF export)
+        run: |
+          (sudo apt-get update && sudo apt-get install -y wkhtmltopdf) \
+            || echo "wkhtmltopdf unavailable on this runner; PDF export skipped (HTML still renders)"
 
       - name: Run weekly pipeline
         env:
