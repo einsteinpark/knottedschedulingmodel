@@ -262,8 +262,11 @@ PROPOSED_SCHEDULE: Dict[int, List[FOHShift]] = {
 for _d in (0, 4, 5, 6):
     relabel_shifts(PROPOSED_SCHEDULE[_d], CLOSE_BY_DOW[_d])
 for d in (1, 2, 3):
+    # Carry pinned breaks over too, so an operator-pinned break on the Mon
+    # template (e.g. Second Closer break at 12:30) applies to Tue-Thu as well.
     PROPOSED_SCHEDULE[d] = [
-        FOHShift(s.label, s.start_min, s.end_min, s.wage, s.tier)
+        FOHShift(s.label, s.start_min, s.end_min, s.wage, s.tier,
+                 pinned_break_start_min=s.pinned_break_start_min)
         for s in PROPOSED_SCHEDULE[0]
     ]
 
