@@ -764,6 +764,7 @@ def _render_day_block(
     def render_boh_bar(b: BOHShift) -> str:
         bl = _pct_left(b.start_min)
         bw = _pct_left(b.end_min) - bl
+        bw = min(bw, 100.0 - bl)   # clamp to midnight edge (e.g. PM prep ends 1:00a)
         brk = ""
         if not b.is_manager and b.break_start_min and b.break_end_min:
             bs_rel = (b.break_start_min - b.start_min) / (b.end_min - b.start_min) * 100
@@ -807,7 +808,7 @@ def _render_day_block(
                 f'<div class="lbl"><span class="dot dot-donut"></span>{b.label}</div>'
                 f'<div class="track"><span class="donut-note">'
                 f'{_overnight_hm(b.start_min)}&ndash;{_overnight_hm(b.end_min)} &middot; '
-                f'{b.paid_hours:g}h &middot; ${b.cost:,.0f} &middot; overnight, off-chart'
+                f'{b.paid_hours:g}h &middot; ${b.cost:,.0f} &middot; 3a start, off-chart'
                 f'</span></div>'
                 f'</div>'
             )

@@ -68,35 +68,36 @@ class BOHShift:
 
     @property
     def end_str(self) -> str:
-        h, m = divmod(self.end_min, 60); return f"{h:02d}:{m:02d}"
+        # % 1440 so a past-midnight end (e.g. 25:00) reads as 01:00, not 25:00.
+        h, m = divmod(self.end_min % 1440, 60); return f"{h:02d}:{m:02d}"
 
 
 def boh_shifts_for_day(dow: int, pm_prep_override: Optional[int] = None) -> List[BOHShift]:
     """
-    BOH morning crew 7:00am-3:30pm every day (operator, 2026-08): one AM Prep ($20)
-    and one AM Service ($25), both paid hourly, no manager coverage. Staggered
-    breaks (8:00-8:30 and 8:30-9:00). Plus PM prep (and overnight donut elsewhere).
+    BOH production-cook roster (operator, 2026-11), all at the blended BOH rate:
+      - AM Cook       8:00a - 4:30p   every day
+      - Daytime Cook  11:30a - 8:00p  Fri/Sat/Sun only (bridges the busy afternoon)
+      - PM Prep       4:30p - 1:00a   every day
+    Early donut production (3:00a-11:30a) is handled in donut_prep_shifts().
 
-    PM prep count: baseline = 1 Sun-Thu / 2 Fri-Sat. Projection weeks (current +
-    forward) pass pm_prep_override=2 for 2x every day (near-term elevated prep).
+    pm_prep_override is accepted for call-site compatibility but no longer used —
+    PM prep is a single 4:30p-1a shift every day.
     """
-    start = 7 * 60
-    end = 15 * 60 + 30
-    shifts: List[BOHShift] = []
-    shifts.append(BOHShift("AM Prep", start, end, config.AVG_BOH_WAGE, False,
-                           break_start_min=8*60, break_end_min=8*60+30))
-    shifts.append(BOHShift("AM Service", start, end, config.AVG_BOH_WAGE, False,
-                           break_start_min=8*60+30, break_end_min=9*60))
-    # PM prep 4:30pm-10:30pm at $20/hr. Baseline = 1 Sun-Thu, 2 Fri/Sat; projection
-    # weeks override to 2 every day. 6.0hr shift -> no meal break (<=6hr).
-    if pm_prep_override is not None:
-        pm_prep_count = pm_prep_override
-    else:
-        pm_prep_count = 2 if dow in (4, 5) else 1   # Fri=4, Sat=5
-    for i in range(pm_prep_count):
-        label = "PM Prep" if pm_prep_count == 1 else f"PM Prep {i+1}"
-        shifts.append(BOHShift(label, 16*60+30, 22*60+30, PREP_COOK_WAGE, False,
-                               break_start_min=0, break_end_min=0))
+    w = config.AVG_BOH_WAGE
+    shifts: List[BOHShift] = [
+        # AM Cook 8:00a-4:30p (8.5h -> 0.5 break)
+        BOHShift("AM Cook", 8 * 60, 16 * 60 + 30, w, False,
+                 break_start_min=12 * 60, break_end_min=12 * 60 + 30),
+    ]
+    if dow in (4, 5, 6):  # Fri / Sat / Sun
+        # Daytime Cook 11:30a-8:00p (8.5h -> 0.5 break)
+        shifts.append(BOHShift("Daytime Cook", 11 * 60 + 30, 20 * 60, w, False,
+                               break_start_min=15 * 60 + 30, break_end_min=16 * 60))
+    # PM Prep 4:30p-1:00a next day (end encoded as 25:00 so cost/paid_hours are
+    # correct; 8.5h -> 0.5 break -> 8.0 paid). Drawn bar is clamped to the midnight
+    # chart edge; the label reads 1:00a via the overnight-aware end_str.
+    shifts.append(BOHShift("PM Prep", 16 * 60 + 30, 25 * 60, w, False,
+                           break_start_min=20 * 60 + 30, break_end_min=21 * 60))
     return shifts
 
 
@@ -126,10 +127,11 @@ def _overnight_hm(minutes: int) -> str:
     return f"{hh}:{mm:02d}{ampm}"
 
 def donut_prep_shifts(dow: int) -> List[BOHShift]:
-    # Single overnight donut prep, 8-hour shift 10:00pm-6:00am every night
-    # (operator, 2026-08). >6hr span -> 0.5 CA meal break -> 7.5 paid hrs @ $19.
+    # Early donut production, 3:00a-11:30a every day (operator, 2026-11). They clock
+    # in at 3a; the hourly chart still starts at 6a, so this is listed off-chart with
+    # a 3a-start note, costed for the full 8.5h span (>6h -> 0.5 break -> 8.0 paid).
     return [
-        BOHShift("Donut Prep", 22 * 60, 22 * 60 + 8 * 60,  # 10:00pm-6:00am
+        BOHShift("Donut Prep", 3 * 60, 11 * 60 + 30,  # 3:00a-11:30a
                  DONUT_PREP_WAGE, False, break_start_min=0, break_end_min=0),
     ]
 
@@ -590,7 +592,7 @@ def _build_html(day_data, max_orders, max_sales, max_per_item,
     panel_1a = f"""<div id="tab-baseline-a" class="tab-panel active" role="tabpanel">
 <header class="masthead">
   <h1>Knotted AD <em>— Pre-DF Baseline (in-house donut production)</em></h1>
-  <div class="sub">Post-DF baseline schedule + overnight donut prep (10pm&ndash;6:30am)</div>
+  <div class="sub">Post-DF baseline schedule + early donut prep (3am&ndash;11:30am)</div>
 </header>
 <section class="summary">
   <div class="col">
@@ -621,11 +623,11 @@ def _build_html(day_data, max_orders, max_sales, max_per_item,
 </section>
 <div class="alloc-note">
   <strong>Pre-Donut-Friend view.</strong> Identical to the Post-DF baseline (Tab 1b),
-  plus <strong>overnight donut prep</strong>: {week_donut_count} shifts/week
-  (2&times;/day, 3&times; Thu/Fri/Sat), 10:00pm&ndash;6:30am, $20/hr, 8h each =
+  plus <strong>early donut prep</strong>: {week_donut_count} shifts/week
+  (1&times;/day), 3:00am&ndash;11:30am, 8h each =
   <strong>${week_donut:,.0f}/week</strong> added BOH labor. Donut prep is listed per
-  day and included in the labor totals above, but runs outside the display window
-  so it is not drawn on the bar chart. Switch to Tab 1b to see the post-transition
+  day and included in the labor totals above; the chart still starts at 6am, so the
+  3am&ndash;6am pre-open hours are noted but not drawn on the bar chart. Switch to Tab 1b to see the post-transition
   model with donuts supplied by Donut Friend (this labor removed).
 </div>
 {days_html_a}
@@ -1262,6 +1264,7 @@ def _day_block(d, max_orders, max_sales, max_per_item, include_donut=False) -> s
     def render_boh_bar(b: BOHShift) -> str:
         bl = pct_left(b.start_min)
         bw = pct_left(b.end_min) - bl
+        bw = min(bw, 100.0 - bl)   # clamp to midnight edge (e.g. PM prep ends 1:00a)
         # Manager doesn't take a break; only render break stripe for hourly cooks
         if b.is_manager:
             brk = ""
@@ -1299,7 +1302,7 @@ def _day_block(d, max_orders, max_sales, max_per_item, include_donut=False) -> s
                 f'<div class="lbl"><span class="dot dot-donut"></span>{b.label}</div>'
                 f'<div class="track"><span class="donut-note">'
                 f'{_overnight_hm(b.start_min)}&ndash;{_overnight_hm(b.end_min)} &middot; '
-                f'{b.paid_hours:g}h &middot; ${b.cost:,.0f} &middot; overnight, off-chart'
+                f'{b.paid_hours:g}h &middot; ${b.cost:,.0f} &middot; 3a start, off-chart'
                 f'</span></div>'
                 f'</div>'
             )
