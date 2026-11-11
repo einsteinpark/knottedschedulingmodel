@@ -75,24 +75,25 @@ class BOHShift:
 def boh_shifts_for_day(dow: int, pm_prep_override: Optional[int] = None) -> List[BOHShift]:
     """
     BOH production-cook roster (operator, 2026-11), all at the blended BOH rate:
-      - AM Cook       8:00a - 4:30p   every day
-      - Daytime Cook  11:30a - 8:00p  Fri/Sat/Sun only (bridges the busy afternoon)
-      - PM Prep       4:30p - 1:00a   every day
+      Mon-Thu:  AM Cook 8:00a-4:30p
+      Fri-Sun:  AM Cook 7:00a-1:00p (6h) + Daytime Cook 11:30a-5:30p (6h) — leaner
+                weekend day shifts
+      Every day: PM Prep 4:30p-1:00a
     Early donut production (3:00a-11:30a) is handled in donut_prep_shifts().
 
     pm_prep_override is accepted for call-site compatibility but no longer used —
     PM prep is a single 4:30p-1a shift every day.
     """
     w = config.AVG_BOH_WAGE
-    shifts: List[BOHShift] = [
-        # AM Cook 8:00a-4:30p (8.5h -> 0.5 break)
-        BOHShift("AM Cook", 8 * 60, 16 * 60 + 30, w, False,
-                 break_start_min=12 * 60, break_end_min=12 * 60 + 30),
-    ]
-    if dow in (4, 5, 6):  # Fri / Sat / Sun
-        # Daytime Cook 11:30a-8:00p (8.5h -> 0.5 break)
-        shifts.append(BOHShift("Daytime Cook", 11 * 60 + 30, 20 * 60, w, False,
-                               break_start_min=15 * 60 + 30, break_end_min=16 * 60))
+    shifts: List[BOHShift] = []
+    if dow in (4, 5, 6):  # Fri / Sat / Sun — leaner 6h day shifts (no meal break)
+        shifts.append(BOHShift("AM Cook", 7 * 60, 13 * 60, w, False,            # 7:00a-1:00p
+                               break_start_min=0, break_end_min=0))
+        shifts.append(BOHShift("Daytime Cook", 11 * 60 + 30, 17 * 60 + 30, w, False,  # 11:30a-5:30p
+                               break_start_min=0, break_end_min=0))
+    else:  # Mon-Thu — AM Cook 8:00a-4:30p (8.5h -> 0.5 break)
+        shifts.append(BOHShift("AM Cook", 8 * 60, 16 * 60 + 30, w, False,
+                               break_start_min=12 * 60, break_end_min=12 * 60 + 30))
     # PM Prep 4:30p-1:00a next day (end encoded as 25:00 so cost/paid_hours are
     # correct; 8.5h -> 0.5 break -> 8.0 paid). Drawn bar is clamped to the midnight
     # chart edge; the label reads 1:00a via the overnight-aware end_str.
