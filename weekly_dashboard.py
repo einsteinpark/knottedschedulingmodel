@@ -1263,10 +1263,11 @@ def _day_block(d, max_orders, max_sales, max_per_item, include_donut=False) -> s
 
     def render_boh_bar(b: BOHShift) -> str:
         bl = pct_left(b.start_min)
-        bw = pct_left(b.end_min) - bl
-        bw = min(bw, 100.0 - bl)   # clamp to midnight edge (e.g. PM prep ends 1:00a)
-        # Manager doesn't take a break; only render break stripe for hourly cooks
-        if b.is_manager:
+        br = pct_left(b.end_min)
+        bl = max(bl, 0.0)           # clamp pre-6a start (donut 3a) to the chart edge
+        bw = min(br, 100.0) - bl    # clamp post-midnight end (PM prep 1a) to the edge
+        # Break stripe only for hourly cooks that actually have a break time set
+        if b.is_manager or not b.break_start_min:
             brk = ""
         else:
             bs_rel = (b.break_start_min - b.start_min) / (b.end_min - b.start_min) * 100
@@ -1292,21 +1293,11 @@ def _day_block(d, max_orders, max_sales, max_per_item, include_donut=False) -> s
     foh_bars = "\n".join(render_foh_bar(s) for s in d["foh_shifts"])
     boh_bars = "\n".join(render_boh_bar(b) for b in d["boh_shifts"])
 
-    # Donut prep (pre-DF): one row per shift, listed not charted (10pm-6:30am).
+    # Donut prep: drawn as a BOH bar too. The 3a clock-in clamps to the 6a chart
+    # edge; the bar label shows the real 03:00-11:30 (noting the 3a start).
     donut_list = ""
     if include_donut and d.get("donut_shifts"):
-        rows = []
-        for b in d["donut_shifts"]:
-            rows.append(
-                f'<div class="shift-row donut-row">'
-                f'<div class="lbl"><span class="dot dot-donut"></span>{b.label}</div>'
-                f'<div class="track"><span class="donut-note">'
-                f'{_overnight_hm(b.start_min)}&ndash;{_overnight_hm(b.end_min)} &middot; '
-                f'{b.paid_hours:g}h &middot; ${b.cost:,.0f} &middot; 3a start, off-chart'
-                f'</span></div>'
-                f'</div>'
-            )
-        donut_list = "\n".join(rows)
+        donut_list = "\n".join(render_boh_bar(b) for b in d["donut_shifts"])
 
     # --- Heatmaps ---
     def heat_row(label_main: str, label_sub: str, cells_html: str, compare: bool = False, total_line: str = "") -> str:

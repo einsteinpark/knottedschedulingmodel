@@ -763,8 +763,9 @@ def _render_day_block(
 
     def render_boh_bar(b: BOHShift) -> str:
         bl = _pct_left(b.start_min)
-        bw = _pct_left(b.end_min) - bl
-        bw = min(bw, 100.0 - bl)   # clamp to midnight edge (e.g. PM prep ends 1:00a)
+        br = _pct_left(b.end_min)
+        bl = max(bl, 0.0)           # clamp pre-6a start (donut 3a) to the chart edge
+        bw = min(br, 100.0) - bl    # clamp post-midnight end (PM prep 1a) to the edge
         brk = ""
         if not b.is_manager and b.break_start_min and b.break_end_min:
             bs_rel = (b.break_start_min - b.start_min) / (b.end_min - b.start_min) * 100
@@ -797,22 +798,9 @@ def _render_day_block(
     foh_bars = "\n".join(render_foh_bar(s) for s in shifts)
     boh_bars = "\n".join(render_boh_bar(b) for b in boh)
 
-    # Donut prep (pre-DF): one row per shift, listed not charted (10pm-6:30am).
-    donut_list = ""
-    if donut:
-        from weekly_dashboard import _overnight_hm
-        rows = []
-        for b in donut:
-            rows.append(
-                f'<div class="shift-row donut-row">'
-                f'<div class="lbl"><span class="dot dot-donut"></span>{b.label}</div>'
-                f'<div class="track"><span class="donut-note">'
-                f'{_overnight_hm(b.start_min)}&ndash;{_overnight_hm(b.end_min)} &middot; '
-                f'{b.paid_hours:g}h &middot; ${b.cost:,.0f} &middot; 3a start, off-chart'
-                f'</span></div>'
-                f'</div>'
-            )
-        donut_list = "\n".join(rows)
+    # Donut prep: drawn as a BOH bar too. The 3a clock-in clamps to the 6a chart
+    # edge; the bar label shows the real 03:00-11:30 (noting the 3a start).
+    donut_list = "\n".join(render_boh_bar(b) for b in donut) if donut else ""
 
     # Heatmap cells
     max_orders_global = max(adj_orders.values()) if adj_orders else 1.0
