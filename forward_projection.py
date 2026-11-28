@@ -287,6 +287,14 @@ def build_current_week_adjustments() -> Dict[date, DayAdjustment]:
     return _build_adjustments(CURRENT_WEEK_DATES)
 
 
+# Previous (completed) week — the week that just rolled off "current".
+PREVIOUS_WEEK_DATES = [LAST_WEEK_START + timedelta(days=i) for i in range(7)]
+
+
+def build_previous_week_adjustments() -> Dict[date, DayAdjustment]:
+    return _build_adjustments(PREVIOUS_WEEK_DATES)
+
+
 def build_week_adjustments() -> Dict[date, DayAdjustment]:
     return _build_adjustments(PROJECTED_DATES)
 
@@ -333,8 +341,15 @@ _FORWARD_LIFT_INTRO = (
     "normal, pre-viral projection method."
 )
 
+_PREVIOUS_LIFT_INTRO = (
+    "Completed week — actuals vs the recency-weighted 8-week day-of-week baseline. "
+    "This is the week that just rolled off ‘current’: the forecast that locked "
+    "when it rolled over is compared against actual Toast sales and labor."
+)
+
 CURRENT_WEEK_FACTOR_BLURBS = _blurbs_for_week(CURRENT_WEEK_DATES, _CURRENT_LIFT_INTRO)
 FORWARD_WEEK_FACTOR_BLURBS = _blurbs_for_week(PROJECTED_DATES, _FORWARD_LIFT_INTRO)
+PREVIOUS_WEEK_FACTOR_BLURBS = _blurbs_for_week(PREVIOUS_WEEK_DATES, _PREVIOUS_LIFT_INTRO)
 
 from shift_optimizer import (
     CURRENT_WEEK_EXTRA_SHIFTS, CURRENT_WEEK_SHIFT_OVERRIDES, FORWARD_WEEK_EXTRA_SHIFTS,
@@ -360,6 +375,14 @@ FORWARD_WEEK_CONFIG = WeekConfig(
     # No per-DOW shaping: post-viral, the 8-week weighted baseline (last 2 weeks
     # heaviest) carries the day-of-week levels on its own.
     dow_adjust={},
+)
+
+PREVIOUS_WEEK_CONFIG = WeekConfig(
+    week_dates=PREVIOUS_WEEK_DATES,
+    lift_multiplier=0.0,
+    label="previous week",
+    adjustments_fn=build_previous_week_adjustments,
+    factor_blurbs=PREVIOUS_WEEK_FACTOR_BLURBS,
 )
 
 

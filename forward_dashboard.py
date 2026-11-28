@@ -46,6 +46,19 @@ def _min_to_str(m: int) -> str:
     return f"{m//60:02d}:{m%60:02d}"
 
 
+# Cross-platform date formatting (Windows strftime has no %-m / %-d).
+def _md(d) -> str:
+    return f"{d.month}/{d.day}"
+
+
+def _abd(d) -> str:   # e.g. "Wed Aug 5"
+    return f"{d:%a %b} {d.day}"
+
+
+def _abdy(d) -> str:  # e.g. "Wed Aug 5, 2026"
+    return f"{d:%a %b} {d.day}, {d.year}"
+
+
 def _pct_left(minute: int, hour_start: int = 6, hour_end: int = 24) -> float:
     span = (hour_end - hour_start) * 60
     return (minute - hour_start * 60) / span * 100
@@ -183,7 +196,7 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
         projected_d = sum(projection[(d, h)].adjusted_sales for h in range(6, 24))
         net_pct = (projected_d / baseline_d - 1) * 100 if baseline_d else 0
         net_cls = "delta-up" if net_pct >= 0 else "delta-down"
-        d_str = d.strftime("%-m/%-d")
+        d_str = _md(d)
         daily_rows_html += (
             f'<tr>'
             f'<td class="day-cell">{DAY_NAMES_SHORT_FULL[dow]} {d_str}</td>'
@@ -236,7 +249,7 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
         for d in week_dates:
             pps = by_date.get(d, [])
             dn = DAY_NAMES_SHORT[d.weekday()]
-            d_str = d.strftime("%-m/%-d")
+            d_str = _md(d)
             if not pps:
                 issues_items.append(
                     f'<li class="no-issues-day"><span class="when">{dn} {d_str}</span>'
@@ -269,23 +282,30 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
 
     # ---- Week range string ----
     week_range = (
-        f"{summary.week_start.strftime('%a %b %-d')} "
-        f"– {summary.week_end.strftime('%a %b %-d, %Y')}"
+        f"{_abd(summary.week_start)} "
+        f"– {_abdy(summary.week_end)}"
     )
 
     days_html = "\n".join(day_blocks)
 
     # Title varies by week config
     is_current = week_config.label == "current week"
-    masthead_title = "Current Week" if is_current else "Forward Projection"
-    masthead_sub = "Projected current week" if is_current else "Projected upcoming week"
+    is_previous = week_config.label == "previous week"
+    # Completed/in-progress weeks both show the projected-vs-actual sections.
+    show_actuals = is_current or is_previous
+    if is_current:
+        masthead_title, masthead_sub = "Current Week", "Projected current week"
+    elif is_previous:
+        masthead_title, masthead_sub = "Previous Week", "Completed week · actuals vs projection"
+    else:
+        masthead_title, masthead_sub = "Forward Projection", "Projected upcoming week"
 
     # ---- Projection accuracy table (current week only) ----
     # Locked projection (frozen when this week rolled from forward -> current)
     # vs actualized Toast sales, with deltas. Drives the "tune until no delta"
     # loop: the goal is to shrink Δ on the forward projection before it locks.
     accuracy_section_html = ""
-    if is_current:
+    if show_actuals:
         try:
             from projection_lock import get_week_lock
             from csv_analyzer import actual_sales_by_date
@@ -300,7 +320,7 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
                 key = d.isoformat()
                 proj = locked_days.get(key)
                 act = actuals.get(d)
-                d_label = f"{DAY_NAMES_SHORT[d.weekday()]} {d.strftime('%-m/%-d')}"
+                d_label = f"{DAY_NAMES_SHORT[d.weekday()]} {_md(d)}"
                 proj_cell = f"${proj:,.0f}" if proj is not None else "—"
                 if act is not None and proj is not None:
                     delta = act - proj
@@ -387,7 +407,7 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
             bs_wtd_proj = bs_wtd_act = 0.0
             bs_n = 0
             for d in week_dates:
-                d_label = f"{DAY_NAMES_SHORT[d.weekday()]} {d.strftime('%-m/%-d')}"
+                d_label = f"{DAY_NAMES_SHORT[d.weekday()]} {_md(d)}"
                 bp = _bs_proj(d)
                 ba = _cw_actuals.get(d, {}).get("bs")
                 if ba is not None and d in _cw_actuals:
@@ -448,12 +468,13 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
         except Exception as _e:
             accuracy_section_html = ""
 
-    # ---- Labor & blended outlook (current week only) ----
+    # ---- Labor & blended outlook (current + previous week) ----
     labor_section_html = ""
-    if is_current:
+    if show_actuals:
         try:
             labor_section_html = _render_labor_outlook(
-                week_dates, per_day_labor, uploads_dir, total_sales, week_labor)
+                week_dates, per_day_labor, uploads_dir, total_sales, week_labor,
+                week_title=masthead_title)
         except Exception:
             labor_section_html = ""
 
@@ -549,6 +570,7 @@ def _render_labor_outlook(
     uploads_dir: Path,
     total_proj_sales: float,
     week_labor_incl_mgr: float,
+    week_title: str = "Current Week",
 ) -> str:
     """Current-week labor + blended outlook.
 
@@ -667,7 +689,7 @@ def _render_labor_outlook(
 
     return f"""
 <section class="labor-outlook">
-  <div class="acc-title">Current Week — Labor: Projected vs Actual (hourly FOH + BOH)</div>
+  <div class="acc-title">{week_title} — Labor: Projected vs Actual (hourly FOH + BOH)</div>
   <div class="labor-scroll">
   <table class="daily-summary accuracy labor-table">
     <thead><tr>
@@ -721,7 +743,7 @@ def _render_day_block(
 ) -> str:
     name = DAY_NAMES_FULL[dow]
     short = DAY_NAMES_SHORT[dow]
-    d_str = d.strftime("%-m/%-d")
+    d_str = _md(d)
 
     # Daily metadata for the right-side stats
     target_pct = config.LABOR_TARGET_PCT * 100
@@ -1038,13 +1060,13 @@ SHEET_2_CSS = """
   border-bottom: 1px dashed var(--rule);
 }
 .proj-sales-amount {
-  font-family: 'Fraunces', serif;
+  font-family: 'Newsreader', Georgia, serif;
   font-size: 26px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .proj-sales-vs-base {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   color: var(--ink-soft);
 }
@@ -1067,7 +1089,7 @@ SHEET_2_CSS = """
   gap: 10px;
 }
 .item-totals .lbl {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1127,7 +1149,7 @@ SHEET_2_CSS = """
 .proj-issue-list li.no-issues::before { background: #4a6b2a; }
 .proj-issue-list li.no-issues-day::before { background: #4a6b2a; }
 .proj-issue-list li .when {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-weight: 500;
   color: var(--ink);
 }
@@ -1145,7 +1167,7 @@ table.daily-summary {
   width: 100%;
   border-collapse: collapse;
   margin: 4px 0 14px 0;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
 }
 table.daily-summary th {
@@ -1184,7 +1206,7 @@ section.proj-accuracy {
   border-radius: 6px;
 }
 .proj-accuracy .acc-title {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1218,7 +1240,7 @@ table.daily-summary.accuracy .pending {
 }
 .proj-accuracy .acc-subtitle {
   margin: 14px 0 6px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1230,7 +1252,7 @@ table.daily-summary.bs-accuracy th:not(:first-child) { text-align: right; }
 /* Day-header chip for adjustment summary */
 .day-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .day-chip {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   background: rgba(196, 84, 31, 0.10);
   color: #7a2818;
@@ -1265,7 +1287,7 @@ section.labor-outlook {
 .labor-outlook .labor-scroll { overflow-x: auto; }
 table.labor-table { width: 100%; min-width: 640px; }
 table.labor-table td.day-cell .proj-tag {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1288,7 +1310,7 @@ table.labor-table td.day-cell .proj-tag {
   padding: 10px 14px;
 }
 .blended-card .bl-k {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1296,13 +1318,13 @@ table.labor-table td.day-cell .proj-tag {
   margin-bottom: 4px;
 }
 .blended-card .bl-v {
-  font-family: 'Fraunces', serif;
+  font-family: 'Newsreader', Georgia, serif;
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .blended-card .bl-meta {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Inter', sans-serif;
   font-size: 10.5px;
   color: var(--ink-soft);
   margin-top: 2px;
