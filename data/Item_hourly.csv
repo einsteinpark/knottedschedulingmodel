@@ -1529,110 +1529,172 @@ date,hour,item,qty
 2026-10-29,12,Chicken Caesar Wrap,3
 2026-10-30,10,Breakfast Sandwich,8
 2026-10-30,10,Chicken Caesar Wrap,1
+2026-10-30,10,Galbi Breakfast Burrito,5
 2026-10-30,11,Breakfast Sandwich,5
 2026-10-30,11,Chicken Caesar Wrap,4
+2026-10-30,11,Galbi Breakfast Burrito,4
 2026-10-30,12,Breakfast Sandwich,1
 2026-10-30,12,Chicken Caesar Wrap,5
+2026-10-30,12,Galbi Breakfast Burrito,6
 2026-10-30,13,Breakfast Sandwich,4
 2026-10-30,13,Chicken Caesar Wrap,1
+2026-10-30,13,Galbi Breakfast Burrito,1
 2026-10-31,8,Breakfast Sandwich,2
+2026-10-31,8,Galbi Breakfast Burrito,4
 2026-10-31,9,Breakfast Sandwich,13
 2026-10-31,9,Chicken Caesar Wrap,2
+2026-10-31,9,Galbi Breakfast Burrito,6
 2026-10-31,10,Breakfast Sandwich,18
 2026-10-31,10,Chicken Caesar Wrap,5
+2026-10-31,10,Galbi Breakfast Burrito,10
 2026-10-31,11,Breakfast Sandwich,16
 2026-10-31,11,Chicken Caesar Wrap,2
+2026-10-31,11,Galbi Breakfast Burrito,9
 2026-10-31,12,Breakfast Sandwich,14
 2026-10-31,12,Chicken Caesar Wrap,3
+2026-10-31,12,Galbi Breakfast Burrito,3
 2026-10-31,13,Breakfast Sandwich,4
 2026-10-31,13,Chicken Caesar Wrap,3
+2026-10-31,13,Galbi Breakfast Burrito,1
 2026-11-01,8,Breakfast Sandwich,3
+2026-11-01,8,Galbi Breakfast Burrito,2
 2026-11-01,9,Breakfast Sandwich,5
 2026-11-01,9,Chicken Caesar Wrap,1
+2026-11-01,9,Galbi Breakfast Burrito,8
 2026-11-01,10,Breakfast Sandwich,5
+2026-11-01,10,Galbi Breakfast Burrito,5
 2026-11-01,11,Breakfast Sandwich,11
 2026-11-01,11,Chicken Caesar Wrap,1
+2026-11-01,11,Galbi Breakfast Burrito,13
 2026-11-01,12,Breakfast Sandwich,6
 2026-11-01,12,Chicken Caesar Wrap,2
+2026-11-01,12,Galbi Breakfast Burrito,6
 2026-11-01,13,Breakfast Sandwich,2
 2026-11-01,13,Chicken Caesar Wrap,1
+2026-11-01,13,Galbi Breakfast Burrito,1
+2026-11-01,14,Galbi Breakfast Burrito,1
 2026-11-02,12,Breakfast Sandwich,10
 2026-11-02,12,Chicken Caesar Wrap,3
+2026-11-02,12,Galbi Breakfast Burrito,7
 2026-11-03,7,Breakfast Sandwich,1
 2026-11-03,8,Chicken Caesar Wrap,1
+2026-11-03,8,Galbi Breakfast Burrito,2
 2026-11-03,9,Breakfast Sandwich,5
 2026-11-03,9,Chicken Caesar Wrap,1
+2026-11-03,9,Galbi Breakfast Burrito,5
 2026-11-03,10,Breakfast Sandwich,2
+2026-11-03,10,Galbi Breakfast Burrito,2
 2026-11-03,11,Breakfast Sandwich,1
 2026-11-03,11,Chicken Caesar Wrap,2
+2026-11-03,11,Galbi Breakfast Burrito,2
 2026-11-03,12,Breakfast Sandwich,3
 2026-11-03,12,Chicken Caesar Wrap,3
 2026-11-04,8,Breakfast Sandwich,5
+2026-11-04,8,Galbi Breakfast Burrito,3
 2026-11-04,9,Breakfast Sandwich,5
+2026-11-04,9,Galbi Breakfast Burrito,3
 2026-11-04,10,Breakfast Sandwich,1
 2026-11-04,10,Chicken Caesar Wrap,1
+2026-11-04,10,Galbi Breakfast Burrito,3
 2026-11-04,11,Chicken Caesar Wrap,3
+2026-11-04,11,Galbi Breakfast Burrito,4
 2026-11-04,12,Breakfast Sandwich,6
 2026-11-04,12,Chicken Caesar Wrap,3
+2026-11-04,12,Galbi Breakfast Burrito,3
 2026-11-05,9,Breakfast Sandwich,3
 2026-11-05,10,Breakfast Sandwich,9
 2026-11-05,10,Chicken Caesar Wrap,5
+2026-11-05,10,Galbi Breakfast Burrito,3
 2026-11-05,12,Breakfast Sandwich,5
 2026-11-05,12,Chicken Caesar Wrap,5
+2026-11-05,12,Galbi Breakfast Burrito,5
 2026-11-06,8,Breakfast Sandwich,11
 2026-11-06,8,Chicken Caesar Wrap,1
+2026-11-06,8,Galbi Breakfast Burrito,3
 2026-11-06,9,Breakfast Sandwich,10
 2026-11-06,9,Chicken Caesar Wrap,1
+2026-11-06,9,Galbi Breakfast Burrito,5
 2026-11-06,10,Breakfast Sandwich,17
 2026-11-06,10,Chicken Caesar Wrap,6
+2026-11-06,10,Galbi Breakfast Burrito,1
 2026-11-06,11,Breakfast Sandwich,6
 2026-11-06,11,Chicken Caesar Wrap,3
+2026-11-06,11,Galbi Breakfast Burrito,1
 2026-11-06,12,Breakfast Sandwich,2
 2026-11-06,12,Chicken Caesar Wrap,4
+2026-11-06,12,Galbi Breakfast Burrito,1
 2026-11-06,13,Chicken Caesar Wrap,4
+2026-11-06,13,Galbi Breakfast Burrito,1
 2026-11-07,8,Breakfast Sandwich,7
+2026-11-07,8,Galbi Breakfast Burrito,6
 2026-11-07,9,Breakfast Sandwich,6
+2026-11-07,9,Galbi Breakfast Burrito,1
 2026-11-07,10,Breakfast Sandwich,14
 2026-11-07,10,Chicken Caesar Wrap,2
+2026-11-07,10,Galbi Breakfast Burrito,6
 2026-11-07,11,Breakfast Sandwich,12
 2026-11-07,11,Chicken Caesar Wrap,2
+2026-11-07,11,Galbi Breakfast Burrito,8
 2026-11-07,12,Breakfast Sandwich,10
+2026-11-07,12,Galbi Breakfast Burrito,5
 2026-11-07,13,Breakfast Sandwich,14
 2026-11-07,13,Chicken Caesar Wrap,2
+2026-11-07,13,Galbi Breakfast Burrito,3
 2026-11-07,14,Breakfast Sandwich,1
 2026-11-08,8,Breakfast Sandwich,5
 2026-11-08,8,Chicken Caesar Wrap,1
+2026-11-08,8,Galbi Breakfast Burrito,6
 2026-11-08,9,Breakfast Sandwich,4
+2026-11-08,9,Galbi Breakfast Burrito,7
 2026-11-08,10,Breakfast Sandwich,15
 2026-11-08,10,Chicken Caesar Wrap,1
+2026-11-08,10,Galbi Breakfast Burrito,3
 2026-11-08,11,Breakfast Sandwich,10
+2026-11-08,11,Galbi Breakfast Burrito,2
 2026-11-08,12,Breakfast Sandwich,4
 2026-11-08,12,Chicken Caesar Wrap,2
+2026-11-08,12,Galbi Breakfast Burrito,4
 2026-11-08,13,Breakfast Sandwich,9
 2026-11-08,13,Chicken Caesar Wrap,1
+2026-11-08,13,Galbi Breakfast Burrito,2
 2026-11-08,14,Chicken Caesar Wrap,1
+2026-11-08,14,Galbi Breakfast Burrito,1
+2026-11-09,7,Galbi Breakfast Burrito,1
 2026-11-09,8,Breakfast Sandwich,1
+2026-11-09,8,Galbi Breakfast Burrito,1
 2026-11-09,9,Breakfast Sandwich,16
 2026-11-09,9,Chicken Caesar Wrap,1
+2026-11-09,9,Galbi Breakfast Burrito,3
 2026-11-09,10,Breakfast Sandwich,7
+2026-11-09,10,Galbi Breakfast Burrito,7
 2026-11-09,11,Breakfast Sandwich,3
 2026-11-09,11,Chicken Caesar Wrap,2
+2026-11-09,11,Galbi Breakfast Burrito,3
 2026-11-09,12,Breakfast Sandwich,3
 2026-11-09,12,Chicken Caesar Wrap,5
+2026-11-09,12,Galbi Breakfast Burrito,1
 2026-11-10,8,Breakfast Sandwich,4
 2026-11-10,8,Chicken Caesar Wrap,1
+2026-11-10,8,Galbi Breakfast Burrito,5
 2026-11-10,9,Breakfast Sandwich,4
+2026-11-10,9,Galbi Breakfast Burrito,2
 2026-11-10,10,Breakfast Sandwich,2
 2026-11-10,10,Chicken Caesar Wrap,1
+2026-11-10,10,Galbi Breakfast Burrito,2
 2026-11-10,11,Breakfast Sandwich,4
+2026-11-10,11,Galbi Breakfast Burrito,1
 2026-11-10,12,Breakfast Sandwich,3
 2026-11-10,12,Chicken Caesar Wrap,2
+2026-11-10,12,Galbi Breakfast Burrito,2
 2026-11-11,8,Breakfast Sandwich,5
 2026-11-11,8,Chicken Caesar Wrap,2
+2026-11-11,8,Galbi Breakfast Burrito,2
 2026-11-11,9,Breakfast Sandwich,9
 2026-11-11,9,Chicken Caesar Wrap,1
+2026-11-11,9,Galbi Breakfast Burrito,6
 2026-11-11,10,Breakfast Sandwich,10
 2026-11-11,10,Chicken Caesar Wrap,6
+2026-11-11,10,Galbi Breakfast Burrito,2
 2026-11-11,11,Breakfast Sandwich,15
 2026-11-11,12,Breakfast Sandwich,5
 2026-11-11,12,Chicken Caesar Wrap,4
@@ -1641,150 +1703,222 @@ date,hour,item,qty
 2026-11-12,8,Breakfast Sandwich,1
 2026-11-12,9,Breakfast Sandwich,8
 2026-11-12,9,Chicken Caesar Wrap,2
+2026-11-12,9,Galbi Breakfast Burrito,3
 2026-11-12,10,Breakfast Sandwich,3
 2026-11-12,10,Chicken Caesar Wrap,3
+2026-11-12,10,Galbi Breakfast Burrito,2
 2026-11-12,11,Breakfast Sandwich,7
 2026-11-12,11,Chicken Caesar Wrap,1
+2026-11-12,11,Galbi Breakfast Burrito,2
 2026-11-12,12,Breakfast Sandwich,2
 2026-11-12,12,Chicken Caesar Wrap,2
+2026-11-12,12,Galbi Breakfast Burrito,1
 2026-11-13,8,Breakfast Sandwich,2
 2026-11-13,8,Chicken Caesar Wrap,2
+2026-11-13,8,Galbi Breakfast Burrito,1
 2026-11-13,9,Breakfast Sandwich,6
 2026-11-13,9,Chicken Caesar Wrap,2
 2026-11-13,10,Breakfast Sandwich,9
 2026-11-13,10,Chicken Caesar Wrap,1
+2026-11-13,10,Galbi Breakfast Burrito,1
 2026-11-13,11,Breakfast Sandwich,13
 2026-11-13,11,Chicken Caesar Wrap,5
+2026-11-13,11,Galbi Breakfast Burrito,2
 2026-11-13,12,Breakfast Sandwich,3
 2026-11-13,12,Chicken Caesar Wrap,3
+2026-11-13,12,Galbi Breakfast Burrito,3
 2026-11-13,13,Breakfast Sandwich,5
 2026-11-13,13,Chicken Caesar Wrap,2
+2026-11-13,13,Galbi Breakfast Burrito,1
 2026-11-14,8,Breakfast Sandwich,3
 2026-11-14,8,Chicken Caesar Wrap,1
+2026-11-14,8,Galbi Breakfast Burrito,9
 2026-11-14,9,Breakfast Sandwich,5
 2026-11-14,9,Chicken Caesar Wrap,4
+2026-11-14,9,Galbi Breakfast Burrito,2
 2026-11-14,10,Breakfast Sandwich,8
 2026-11-14,10,Chicken Caesar Wrap,6
+2026-11-14,10,Galbi Breakfast Burrito,4
 2026-11-14,11,Breakfast Sandwich,9
 2026-11-14,11,Chicken Caesar Wrap,2
+2026-11-14,11,Galbi Breakfast Burrito,12
 2026-11-14,12,Breakfast Sandwich,8
 2026-11-14,12,Chicken Caesar Wrap,3
+2026-11-14,12,Galbi Breakfast Burrito,2
 2026-11-14,13,Breakfast Sandwich,3
 2026-11-14,13,Chicken Caesar Wrap,4
+2026-11-14,13,Galbi Breakfast Burrito,1
 2026-11-15,8,Breakfast Sandwich,2
+2026-11-15,8,Galbi Breakfast Burrito,7
 2026-11-15,9,Breakfast Sandwich,13
 2026-11-15,9,Chicken Caesar Wrap,3
+2026-11-15,9,Galbi Breakfast Burrito,3
 2026-11-15,10,Breakfast Sandwich,17
 2026-11-15,10,Chicken Caesar Wrap,5
+2026-11-15,10,Galbi Breakfast Burrito,6
 2026-11-15,11,Breakfast Sandwich,11
 2026-11-15,11,Chicken Caesar Wrap,2
+2026-11-15,11,Galbi Breakfast Burrito,1
 2026-11-15,12,Breakfast Sandwich,3
 2026-11-15,12,Chicken Caesar Wrap,1
+2026-11-15,12,Galbi Breakfast Burrito,3
 2026-11-15,13,Breakfast Sandwich,5
 2026-11-15,13,Chicken Caesar Wrap,2
+2026-11-15,13,Galbi Breakfast Burrito,2
 2026-11-16,8,Breakfast Sandwich,3
+2026-11-16,8,Galbi Breakfast Burrito,3
 2026-11-16,9,Breakfast Sandwich,4
+2026-11-16,9,Galbi Breakfast Burrito,1
 2026-11-16,10,Breakfast Sandwich,4
 2026-11-16,10,Chicken Caesar Wrap,2
+2026-11-16,10,Galbi Breakfast Burrito,4
 2026-11-16,11,Breakfast Sandwich,10
 2026-11-16,11,Chicken Caesar Wrap,1
+2026-11-16,11,Galbi Breakfast Burrito,5
 2026-11-16,12,Breakfast Sandwich,3
 2026-11-16,12,Chicken Caesar Wrap,3
 2026-11-17,8,Breakfast Sandwich,1
+2026-11-17,8,Galbi Breakfast Burrito,3
 2026-11-17,9,Breakfast Sandwich,2
 2026-11-17,9,Chicken Caesar Wrap,2
+2026-11-17,9,Galbi Breakfast Burrito,3
 2026-11-17,10,Breakfast Sandwich,2
 2026-11-17,10,Chicken Caesar Wrap,1
+2026-11-17,10,Galbi Breakfast Burrito,2
 2026-11-17,11,Breakfast Sandwich,4
 2026-11-17,11,Chicken Caesar Wrap,1
+2026-11-17,11,Galbi Breakfast Burrito,2
 2026-11-17,12,Breakfast Sandwich,2
 2026-11-17,12,Chicken Caesar Wrap,3
 2026-11-18,8,Breakfast Sandwich,1
 2026-11-18,9,Breakfast Sandwich,3
 2026-11-18,9,Chicken Caesar Wrap,2
+2026-11-18,9,Galbi Breakfast Burrito,2
 2026-11-18,10,Breakfast Sandwich,10
 2026-11-18,11,Breakfast Sandwich,3
 2026-11-18,11,Chicken Caesar Wrap,1
+2026-11-18,11,Galbi Breakfast Burrito,2
 2026-11-18,12,Breakfast Sandwich,6
 2026-11-18,12,Chicken Caesar Wrap,1
+2026-11-18,12,Galbi Breakfast Burrito,2
 2026-11-19,8,Breakfast Sandwich,2
 2026-11-19,9,Breakfast Sandwich,6
+2026-11-19,9,Galbi Breakfast Burrito,1
 2026-11-19,10,Breakfast Sandwich,4
+2026-11-19,10,Galbi Breakfast Burrito,5
 2026-11-19,11,Breakfast Sandwich,3
 2026-11-19,11,Chicken Caesar Wrap,1
 2026-11-19,12,Breakfast Sandwich,3
+2026-11-19,12,Galbi Breakfast Burrito,1
 2026-11-20,8,Breakfast Sandwich,9
+2026-11-20,8,Galbi Breakfast Burrito,3
 2026-11-20,9,Breakfast Sandwich,4
+2026-11-20,9,Galbi Breakfast Burrito,3
 2026-11-20,10,Breakfast Sandwich,6
 2026-11-20,10,Chicken Caesar Wrap,1
+2026-11-20,10,Galbi Breakfast Burrito,2
 2026-11-20,11,Breakfast Sandwich,5
 2026-11-20,11,Chicken Caesar Wrap,3
+2026-11-20,11,Galbi Breakfast Burrito,5
 2026-11-20,12,Breakfast Sandwich,2
 2026-11-20,12,Chicken Caesar Wrap,2
+2026-11-20,12,Galbi Breakfast Burrito,3
 2026-11-20,13,Breakfast Sandwich,1
 2026-11-20,13,Chicken Caesar Wrap,1
 2026-11-21,8,Breakfast Sandwich,6
+2026-11-21,8,Galbi Breakfast Burrito,1
 2026-11-21,9,Breakfast Sandwich,4
 2026-11-21,9,Chicken Caesar Wrap,1
+2026-11-21,9,Galbi Breakfast Burrito,3
 2026-11-21,10,Breakfast Sandwich,9
 2026-11-21,10,Chicken Caesar Wrap,1
+2026-11-21,10,Galbi Breakfast Burrito,3
 2026-11-21,11,Breakfast Sandwich,11
 2026-11-21,11,Chicken Caesar Wrap,2
+2026-11-21,11,Galbi Breakfast Burrito,5
 2026-11-21,12,Breakfast Sandwich,9
 2026-11-21,12,Chicken Caesar Wrap,2
+2026-11-21,12,Galbi Breakfast Burrito,5
 2026-11-21,13,Breakfast Sandwich,2
 2026-11-21,13,Chicken Caesar Wrap,2
+2026-11-21,13,Galbi Breakfast Burrito,2
 2026-11-21,14,Chicken Caesar Wrap,1
 2026-11-22,8,Breakfast Sandwich,3
+2026-11-22,8,Galbi Breakfast Burrito,5
 2026-11-22,9,Breakfast Sandwich,2
+2026-11-22,9,Galbi Breakfast Burrito,3
 2026-11-22,10,Breakfast Sandwich,10
+2026-11-22,10,Galbi Breakfast Burrito,2
 2026-11-22,11,Breakfast Sandwich,11
 2026-11-22,11,Chicken Caesar Wrap,2
+2026-11-22,11,Galbi Breakfast Burrito,4
 2026-11-22,12,Breakfast Sandwich,1
 2026-11-22,12,Chicken Caesar Wrap,3
+2026-11-22,12,Galbi Breakfast Burrito,4
 2026-11-22,13,Breakfast Sandwich,1
 2026-11-22,13,Chicken Caesar Wrap,3
+2026-11-22,13,Galbi Breakfast Burrito,1
 2026-11-23,7,Breakfast Sandwich,1
 2026-11-23,8,Breakfast Sandwich,4
+2026-11-23,8,Galbi Breakfast Burrito,2
 2026-11-23,9,Breakfast Sandwich,3
 2026-11-23,9,Chicken Caesar Wrap,1
+2026-11-23,9,Galbi Breakfast Burrito,1
 2026-11-23,10,Breakfast Sandwich,7
 2026-11-23,10,Chicken Caesar Wrap,1
+2026-11-23,10,Galbi Breakfast Burrito,2
 2026-11-23,11,Breakfast Sandwich,6
 2026-11-23,11,Chicken Caesar Wrap,1
+2026-11-23,11,Galbi Breakfast Burrito,2
 2026-11-23,12,Breakfast Sandwich,5
 2026-11-23,12,Chicken Caesar Wrap,3
+2026-11-23,12,Galbi Breakfast Burrito,2
 2026-11-24,7,Breakfast Sandwich,2
 2026-11-24,7,Chicken Caesar Wrap,1
 2026-11-24,8,Breakfast Sandwich,3
+2026-11-24,8,Galbi Breakfast Burrito,2
 2026-11-24,9,Breakfast Sandwich,6
 2026-11-24,9,Chicken Caesar Wrap,1
+2026-11-24,9,Galbi Breakfast Burrito,1
 2026-11-24,10,Breakfast Sandwich,6
 2026-11-24,10,Chicken Caesar Wrap,1
+2026-11-24,10,Galbi Breakfast Burrito,3
 2026-11-24,11,Breakfast Sandwich,4
 2026-11-24,11,Chicken Caesar Wrap,3
+2026-11-24,11,Galbi Breakfast Burrito,3
 2026-11-24,12,Breakfast Sandwich,5
 2026-11-24,12,Chicken Caesar Wrap,1
+2026-11-24,12,Galbi Breakfast Burrito,1
 2026-11-25,8,Breakfast Sandwich,6
 2026-11-25,8,Chicken Caesar Wrap,1
+2026-11-25,8,Galbi Breakfast Burrito,1
 2026-11-25,9,Breakfast Sandwich,13
 2026-11-25,9,Chicken Caesar Wrap,1
+2026-11-25,9,Galbi Breakfast Burrito,4
 2026-11-25,10,Breakfast Sandwich,13
 2026-11-25,10,Chicken Caesar Wrap,4
+2026-11-25,10,Galbi Breakfast Burrito,2
 2026-11-25,11,Breakfast Sandwich,7
 2026-11-25,11,Chicken Caesar Wrap,2
+2026-11-25,11,Galbi Breakfast Burrito,3
 2026-11-25,12,Breakfast Sandwich,7
 2026-11-25,12,Chicken Caesar Wrap,1
+2026-11-25,12,Galbi Breakfast Burrito,1
 2026-11-27,7,Breakfast Sandwich,1
 2026-11-27,8,Breakfast Sandwich,6
 2026-11-27,8,Chicken Caesar Wrap,1
 2026-11-27,9,Breakfast Sandwich,3
 2026-11-27,9,Chicken Caesar Wrap,2
+2026-11-27,9,Galbi Breakfast Burrito,2
 2026-11-27,10,Breakfast Sandwich,14
 2026-11-27,10,Chicken Caesar Wrap,2
+2026-11-27,10,Galbi Breakfast Burrito,5
 2026-11-27,11,Breakfast Sandwich,5
 2026-11-27,11,Chicken Caesar Wrap,2
+2026-11-27,11,Galbi Breakfast Burrito,6
 2026-11-27,12,Breakfast Sandwich,2
 2026-11-27,12,Chicken Caesar Wrap,6
+2026-11-27,12,Galbi Breakfast Burrito,4
 2026-11-27,13,Breakfast Sandwich,6
 2026-11-27,13,Chicken Caesar Wrap,1
+2026-11-27,13,Galbi Breakfast Burrito,2
