@@ -101,26 +101,43 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
         (p.date, p.hour): p for p in summary.pinch_points
     }
 
+    from forward_projection import CLOSED_DATES, SPECIAL_HOURS
+    from shift_optimizer import day_schedule
+    from weekly_dashboard import donut_prep_shifts
     for d in week_dates:
         dow = d.weekday()
         adj_orders = {(dow, h): projection[(d, h)].adjusted_orders for h in range(6, 24)}
         adj_sales = {(dow, h): projection[(d, h)].adjusted_sales for h in range(6, 24)}
         daily_proj = {dow: sum(adj_sales.values())}
-        from shift_optimizer import day_schedule
-        shifts, _ = assign_breaks(
-            day_schedule(dow, week_config.extra_foh_shifts, week_config.base_foh_overrides), dow,
-            daily_proj, adj_orders, adj_sales,
-        )
-        # Current + forward weeks run 2x PM prep every day (baseline is 1/2).
-        boh = boh_shifts_for_day(dow, pm_prep_override=2)
-        if week_config.label == "current week":
-            from weekly_dashboard import current_week_extra_boh
-            boh = boh + current_week_extra_boh(dow)
-        # Overnight donut prep (pre-DF): current week and forward are the real
-        # near-term operational weeks (still making donuts in-house), so both
-        # carry it. Costed + listed, not charted.
-        from weekly_dashboard import donut_prep_shifts
-        donut = donut_prep_shifts(dow)
+        is_closed = d in CLOSED_DATES
+        if is_closed:
+            # Holiday closure: no schedule, no labor.
+            shifts, boh, donut = [], [], []
+        else:
+            shifts, _ = assign_breaks(
+                day_schedule(dow, week_config.extra_foh_shifts, week_config.base_foh_overrides), dow,
+                daily_proj, adj_orders, adj_sales,
+            )
+            if d in SPECIAL_HOURS:
+                # Reduced hours: clamp the roster to the open window.
+                o_min, c_min = SPECIAL_HOURS[d][0] * 60, SPECIAL_HOURS[d][1] * 60
+                _clamped = []
+                for s in shifts:
+                    if s.start_min >= c_min or s.end_min <= o_min:
+                        continue  # shift falls entirely outside open hours
+                    s.start_min = max(s.start_min, o_min)
+                    s.end_min = min(s.end_min, c_min)
+                    _clamped.append(s)
+                shifts = _clamped
+            # Current + forward weeks run 2x PM prep every day (baseline is 1/2).
+            boh = boh_shifts_for_day(dow, pm_prep_override=2)
+            if week_config.label == "current week":
+                from weekly_dashboard import current_week_extra_boh
+                boh = boh + current_week_extra_boh(dow)
+            # Overnight donut prep (pre-DF): current week and forward are the real
+            # near-term operational weeks (still making donuts in-house), so both
+            # carry it. Costed + listed, not charted.
+            donut = donut_prep_shifts(dow)
         donut_cost = sum(s.cost for s in donut)
         donut_hrs = sum(s.paid_hours for s in donut)
         foh_cost, foh_hrs, _ = schedule_cost(shifts)
@@ -485,9 +502,10 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
                 return sum(_avg.get((dow, h, name), 0.0)
                            for _, name, _ in _ITEMS for h in range(6, 24))
 
-            sales_days = [d for d in week_dates if d in _acts]
+            sales_days = [d for d in week_dates if d in _acts and d not in CLOSED_DATES]
             labor_days = [d for d in week_dates
-                          if d in _labor_act and _labor_act[d].get("foh_cost") is not None]
+                          if d in _labor_act and _labor_act[d].get("foh_cost") is not None
+                          and d not in CLOSED_DATES]
             lbasis = labor_days if labor_days else week_dates
             has_labor = bool(labor_days)
 

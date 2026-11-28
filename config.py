@@ -237,6 +237,10 @@ MANUAL_IGNORE_DATES: List[str] = [
     "2026-07-04",  # Independence Day — holiday-depressed Saturday ($7,584, vs
                    # ~$8.8-9.8k normal Saturdays). Excluded so it doesn't drag
                    # down the recency-weighted Saturday baseline.
+    # Closed holidays — excluded so $0 days don't drag the DOW baselines.
+    "2026-11-26",  # Thanksgiving — closed
+    "2026-12-25",  # Christmas Day — closed
+    "2027-01-01",  # New Year's Day — closed
 ]
 
 

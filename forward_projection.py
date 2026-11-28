@@ -95,7 +95,10 @@ class DayAdjustment:
     # factors list of (factor_name, sales_mult, orders_mult, hour_scope)
     # hour_scope: "all", "am" (open-11am), "midday" (11am-2pm), "pm" (2pm-close)
 
-    def _matches_scope(self, hour: int, scope: str) -> bool:
+    def _matches_scope(self, hour: int, scope) -> bool:
+        # Tuple scope (lo, hi) matches lo <= hour < hi (used for holiday hours).
+        if isinstance(scope, tuple):
+            return scope[0] <= hour < scope[1]
         if scope == "all": return True
         if scope == "am": return hour < 11
         if scope == "midday": return 11 <= hour < 14
@@ -266,6 +269,20 @@ def _lausd_active(d: date) -> bool:
     return start <= d <= end and d.weekday() < 5
 
 
+# Full closures: no sales, no schedule, excluded from the actuals scorecard.
+CLOSED_DATES: Dict[date, str] = {
+    date(2026, 11, 26): "Thanksgiving",
+    date(2026, 12, 25): "Christmas Day",
+    date(2027, 1, 1): "New Year's Day",
+}
+# Reduced-hours days: (open_hour, close_hour). Sales/orders outside the window
+# are zeroed and the schedule closes early.
+SPECIAL_HOURS: Dict[date, Tuple[int, int]] = {
+    date(2026, 12, 24): (8, 17),   # Christmas Eve — 8a–5p
+    date(2026, 12, 31): (8, 17),   # New Year's Eve — 8a–5p
+}
+
+
 def _build_adjustments(week_dates: List[date]) -> Dict[date, DayAdjustment]:
     """Neutral per-day adjustments, plus LAUSD weekday shape (while on summer
     break) and any CALENDAR_EVENTS that fall inside this week. Rolls on its own:
@@ -281,6 +298,15 @@ def _build_adjustments(week_dates: List[date]) -> Dict[date, DayAdjustment]:
         if ev:
             for f in ev["factors"]:
                 adjustments[d].factors.append(f)
+        # Holiday closures / reduced hours (applied last so they win).
+        if d in CLOSED_DATES:
+            adjustments[d].factors.append(
+                (f"CLOSED — {CLOSED_DATES[d]}", 0.0, 0.0, "all"))
+        elif d in SPECIAL_HOURS:
+            o, c = SPECIAL_HOURS[d]
+            label = f"Holiday hours {o}a–{(c-12) if c > 12 else c}p"
+            adjustments[d].factors.append((label, 0.0, 0.0, (0, o)))
+            adjustments[d].factors.append((label, 0.0, 0.0, (c, 24)))
     return adjustments
 
 
