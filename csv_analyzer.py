@@ -186,6 +186,7 @@ def current_week_actuals(uploads_dir: Path) -> Dict[date, Dict[str, float]]:
                 "orders": _to_float(r.get("orders", "0")),
                 "bs": _to_float(r.get("bs", "0")),
                 "cw": _to_float(r.get("cw", "0")),
+                "bb": _to_float(r.get("bb", "0")),
             }
     return out
 

@@ -390,57 +390,164 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
                     f'<code>actuals.csv</code>.</div>'
                 )
 
-            # ---- Breakfast Sandwich projected vs actual ----
+            # ---- bs + cw + bb: projected vs actual (per item, shown as "act (proj)") ----
             from item_hourly import load_item_hourly
             from forward_projection import bscw_item_lifts
             from csv_analyzer import current_week_actuals
             _avg = load_item_hourly(uploads_dir)
-            _bs_lift, _ = bscw_item_lifts(uploads_dir, week_config.lift_multiplier)
-            _cw_actuals = current_week_actuals(uploads_dir)
+            _bs_lift, _cw_lift = bscw_item_lifts(uploads_dir, week_config.lift_multiplier)
+            _acts = current_week_actuals(uploads_dir)
 
-            def _bs_proj(d):
+            # (key, canonical item name, recency lift) — bb reuses the breakfast lift
+            _ITEMS = [("bs", "Breakfast Sandwich", _bs_lift),
+                      ("cw", "Chicken Caesar Wrap", _cw_lift),
+                      ("bb", "Galbi Breakfast Burrito", _bs_lift)]
+
+            def _item_proj(d, name, lift):
                 dow = d.weekday()
-                return sum(_avg.get((dow, h, "Breakfast Sandwich"), 0.0)
-                           for h in range(6, 24)) * _bs_lift
+                return sum(_avg.get((dow, h, name), 0.0) for h in range(6, 24)) * lift
 
-            bs_rows = ""
-            bs_wtd_proj = bs_wtd_act = 0.0
-            bs_n = 0
+            def _ap_cell(act, proj):
+                if act is None:
+                    return (f'<td class="num"><span class="pending">—</span> '
+                            f'<span class="base">({proj:.0f})</span></td>')
+                return f'<td class="num strong">{act:.0f} <span class="base">({proj:.0f})</span></td>'
+
+            item_rows = ""
+            wtd_proj = {k: 0.0 for k, _, _ in _ITEMS}
+            wtd_act = {k: 0.0 for k, _, _ in _ITEMS}
+            wtd_tot_proj = wtd_tot_act = 0.0
+            wtd_n = 0
             for d in week_dates:
                 d_label = f"{DAY_NAMES_SHORT[d.weekday()]} {_md(d)}"
-                bp = _bs_proj(d)
-                ba = _cw_actuals.get(d, {}).get("bs")
-                if ba is not None and d in _cw_actuals:
-                    delta = ba - bp
-                    dpct = (delta / bp * 100) if bp else 0
+                day_act = _acts.get(d)
+                have_act = day_act is not None
+                projs = {k: _item_proj(d, name, lift) for k, name, lift in _ITEMS}
+                tot_proj = sum(projs.values())
+                cells = ""
+                tot_act = 0.0
+                for k, _, _ in _ITEMS:
+                    a = day_act.get(k) if have_act else None
+                    cells += _ap_cell(a, projs[k])
+                    if have_act:
+                        tot_act += (a or 0.0)
+                if have_act:
+                    delta = tot_act - tot_proj
+                    dpct = (delta / tot_proj * 100) if tot_proj else 0
                     dcls = "delta-up" if delta >= 0 else "delta-down"
-                    cells = (f'<td class="num strong">{ba:.0f}</td>'
-                             f'<td class="num {dcls}">{delta:+.0f}</td>'
-                             f'<td class="num {dcls}">{dpct:+.0f}%</td>')
-                    bs_wtd_proj += bp
-                    bs_wtd_act += ba
-                    bs_n += 1
+                    tot_cell = (f'<td class="num strong">{tot_act:.0f} '
+                                f'<span class="base">({tot_proj:.0f})</span></td>'
+                                f'<td class="num {dcls}">{dpct:+.0f}%</td>')
+                    for k, _, _ in _ITEMS:
+                        wtd_proj[k] += projs[k]
+                        wtd_act[k] += (day_act.get(k) or 0.0)
+                    wtd_tot_proj += tot_proj
+                    wtd_tot_act += tot_act
+                    wtd_n += 1
                 else:
-                    cells = ('<td class="num strong"><span class="pending">pending</span></td>'
-                             '<td class="num pending">—</td><td class="num pending">—</td>')
-                bs_rows += (f'<tr><td class="day-cell">{d_label}</td>'
-                            f'<td class="num">{bp:.0f}</td>{cells}</tr>')
-            if bs_n:
-                bd = bs_wtd_act - bs_wtd_proj
-                bpct = (bd / bs_wtd_proj * 100) if bs_wtd_proj else 0
-                bcls = "delta-up" if bd >= 0 else "delta-down"
-                bs_wtd_row = (
-                    f'<tr class="wtd-row"><td class="day-cell">Week-to-date ({bs_n}d)</td>'
-                    f'<td class="num">{bs_wtd_proj:.0f}</td>'
-                    f'<td class="num strong">{bs_wtd_act:.0f}</td>'
-                    f'<td class="num {bcls}">{bd:+.0f}</td>'
-                    f'<td class="num {bcls}">{bpct:+.0f}%</td></tr>'
+                    tot_cell = (f'<td class="num"><span class="pending">—</span> '
+                                f'<span class="base">({tot_proj:.0f})</span></td>'
+                                f'<td class="num pending">—</td>')
+                item_rows += f'<tr><td class="day-cell">{d_label}</td>{cells}{tot_cell}</tr>'
+            if wtd_n:
+                wd = wtd_tot_act - wtd_tot_proj
+                wpct = (wd / wtd_tot_proj * 100) if wtd_tot_proj else 0
+                wcls = "delta-up" if wd >= 0 else "delta-down"
+                _wtd_item_cells = "".join(
+                    f'<td class="num strong">{wtd_act[k]:.0f} '
+                    f'<span class="base">({wtd_proj[k]:.0f})</span></td>'
+                    for k, _, _ in _ITEMS)
+                item_wtd_row = (
+                    f'<tr class="wtd-row"><td class="day-cell">Week-to-date ({wtd_n}d)</td>'
+                    f'{_wtd_item_cells}'
+                    f'<td class="num strong">{wtd_tot_act:.0f} '
+                    f'<span class="base">({wtd_tot_proj:.0f})</span></td>'
+                    f'<td class="num {wcls}">{wpct:+.0f}%</td></tr>'
                 )
             else:
-                bs_wtd_row = ('<tr class="wtd-row"><td class="day-cell">Week-to-date</td>'
-                              '<td class="num pending" colspan="4">no actuals yet</td></tr>')
+                item_wtd_row = ('<tr class="wtd-row"><td class="day-cell">Week-to-date</td>'
+                                '<td class="num pending" colspan="5">no actuals yet</td></tr>')
 
-            accuracy_section_html = f"""
+            # ===== Top summary scorecard: actual vs projected vs baseline =====
+            from csv_analyzer import actual_labor_by_date
+            _labor_act = actual_labor_by_date(uploads_dir)
+            _proj_sales_d = {e["date"]: e["proj_sales"] for e in per_day_labor}
+            _proj_foh_d = {e["date"]: e["proj_foh"] for e in per_day_labor}
+            _proj_boh_d = {e["date"]: e["proj_boh"] for e in per_day_labor}
+            _base_sales_d = {d: sum(projection[(d, h)].historical_sales for h in range(6, 24))
+                             for d in week_dates}
+
+            def _items_proj_day(d):
+                return sum(_item_proj(d, name, lift) for _, name, lift in _ITEMS)
+
+            def _items_base_day(d):
+                dow = d.weekday()
+                return sum(_avg.get((dow, h, name), 0.0)
+                           for _, name, _ in _ITEMS for h in range(6, 24))
+
+            sales_days = [d for d in week_dates if d in _acts]
+            labor_days = [d for d in week_dates
+                          if d in _labor_act and _labor_act[d].get("foh_cost") is not None]
+            lbasis = labor_days if labor_days else week_dates
+            has_labor = bool(labor_days)
+
+            rev_a = sum(_acts[d]["net"] for d in sales_days)
+            rev_p = sum(_proj_sales_d.get(d, 0.0) for d in sales_days)
+            rev_b = sum(_base_sales_d.get(d, 0.0) for d in sales_days)
+            it_a = sum(_acts[d].get("bs", 0) + _acts[d].get("cw", 0) + _acts[d].get("bb", 0)
+                       for d in sales_days)
+            it_p = sum(_items_proj_day(d) for d in sales_days)
+            it_b = sum(_items_base_day(d) for d in sales_days)
+            foh_a = sum((_labor_act[d]["foh_cost"] or 0) for d in labor_days)
+            boh_a = sum((_labor_act[d]["boh_cost"] or 0) for d in labor_days)
+            foh_p = sum(_proj_foh_d.get(d, 0.0) for d in lbasis)
+            boh_p = sum(_proj_boh_d.get(d, 0.0) for d in lbasis)
+            rev_a_l = sum(_acts[d]["net"] for d in labor_days if d in _acts)
+            rev_p_l = sum(_proj_sales_d.get(d, 0.0) for d in lbasis)
+            rev_b_l = sum(_base_sales_d.get(d, 0.0) for d in lbasis)
+
+            def _pct(n, dd): return (n / dd * 100) if dd else 0.0
+            def _dol(v): return f"${v:,.0f}"
+            def _cnt(v): return f"{v:,.0f}"
+
+            def _lab_act_cell(amt, denom):
+                if not has_labor:
+                    return '<td class="num"><span class="pending">—</span></td>'
+                return (f'<td class="num strong">{_dol(amt)} '
+                        f'<span class="base">{_pct(amt, denom):.1f}%</span></td>')
+
+            def _lab_cell(amt, denom):
+                return (f'<td class="num">{_dol(amt)} '
+                        f'<span class="base">{_pct(amt, denom):.1f}%</span></td>')
+
+            scorecard_html = f"""
+<section class="proj-accuracy scorecard">
+  <div class="acc-title">Week Scorecard — Actual vs Projected vs Baseline</div>
+  <table class="daily-summary accuracy">
+    <thead><tr><th>Metric</th><th>Actual</th><th>Projected</th><th>Baseline</th></tr></thead>
+    <tbody>
+      <tr><td class="day-cell">Revenue</td>
+        <td class="num strong">{_dol(rev_a)}</td>
+        <td class="num">{_dol(rev_p)}</td>
+        <td class="num">{_dol(rev_b)}</td></tr>
+      <tr><td class="day-cell">Items (BS+CW+BB)</td>
+        <td class="num strong">{_cnt(it_a)}</td>
+        <td class="num">{_cnt(it_p)}</td>
+        <td class="num">{_cnt(it_b)}</td></tr>
+      <tr><td class="day-cell">FOH labor $ / %</td>
+        {_lab_act_cell(foh_a, rev_a_l)}
+        {_lab_cell(foh_p, rev_p_l)}
+        {_lab_cell(foh_p, rev_b_l)}</tr>
+      <tr><td class="day-cell">BOH labor $ / %</td>
+        {_lab_act_cell(boh_a, rev_a_l)}
+        {_lab_cell(boh_p, rev_p_l)}
+        {_lab_cell(boh_p, rev_b_l)}</tr>
+    </tbody>
+  </table>
+  <div class="acc-subtitle">Revenue &amp; items over {len(sales_days)} completed day(s) &middot; labor over {len(labor_days)} day(s) with clock-in. Baseline = 8-week recency-weighted normal.</div>
+</section>"""
+
+            accuracy_section_html = scorecard_html + f"""
 <section class="proj-accuracy">
   <div class="acc-title">Projection vs Actual — Locked Forecast Scorecard</div>
   <table class="daily-summary accuracy">
@@ -453,14 +560,14 @@ def render_sheet_2(uploads_dir: Path, week_config: Optional[WeekConfig] = None) 
 {full_row}
     </tbody>
   </table>
-  <div class="acc-subtitle">Breakfast Sandwich — projected (live model) vs actual</div>
+  <div class="acc-subtitle">Items — projected (live model) vs actual &middot; shown as <strong>actual</strong> (proj)</div>
   <table class="daily-summary accuracy bs-accuracy">
     <thead><tr>
-      <th>Day</th><th>BS Proj</th><th>BS Actual</th><th>Δ</th><th>Δ %</th>
+      <th>Day</th><th>BS</th><th>CW</th><th>BB</th><th>Total</th><th>Δ %</th>
     </tr></thead>
     <tbody>
-{bs_rows}
-{bs_wtd_row}
+{item_rows}
+{item_wtd_row}
     </tbody>
   </table>
   {lock_note}
@@ -844,37 +951,50 @@ def _render_day_block(
         cw_base = item_hourly_avg.get((dow, h, "Chicken Caesar Wrap"), 0.0)
         return bs_base * bs_lift * _wk_bs_scale, cw_base * cw_lift * _wk_cw_scale
 
+    def _proj_bb(dow, h):
+        # Galbi Breakfast Burrito: same breakfast lift as BS; zero until data lands.
+        bb_base = item_hourly_avg.get((dow, h, "Galbi Breakfast Burrito"), 0.0)
+        return bb_base * bs_lift * _wk_bs_scale
+
     proj_bs_by_h: Dict[int, float] = {}
     proj_cw_by_h: Dict[int, float] = {}
+    proj_bb_by_h: Dict[int, float] = {}
     for h in DISPLAY_HOURS:
         bs_p, cw_p = _proj_bscw(dow, h)
         proj_bs_by_h[h] = bs_p
         proj_cw_by_h[h] = cw_p
-    # Shared max across BS and CW rows for comparable color intensity
+        proj_bb_by_h[h] = _proj_bb(dow, h)
+    # Shared max across BS, CW, BB rows for comparable color intensity
     shared_item_max = max(
         max(proj_bs_by_h.values()) if proj_bs_by_h else 1.0,
         max(proj_cw_by_h.values()) if proj_cw_by_h else 1.0,
+        max(proj_bb_by_h.values()) if proj_bb_by_h else 1.0,
     )
     max_bs = shared_item_max
     max_cw = shared_item_max
+    max_bb = shared_item_max
 
     # Per-day totals: projected (last-week-anchored) vs 8-wk DOW avg
     bs_proj_day = sum(_proj_bscw(dow, h)[0] for h in range(6, 24))
     cw_proj_day = sum(_proj_bscw(dow, h)[1] for h in range(6, 24))
+    bb_proj_day = sum(_proj_bb(dow, h) for h in range(6, 24))
     bs_avg_day = sum(item_hourly_avg.get((dow, h, "Breakfast Sandwich"), 0.0)
                      for h in range(6, 24))
     cw_avg_day = sum(item_hourly_avg.get((dow, h, "Chicken Caesar Wrap"), 0.0)
+                     for h in range(6, 24))
+    bb_avg_day = sum(item_hourly_avg.get((dow, h, "Galbi Breakfast Burrito"), 0.0)
                      for h in range(6, 24))
 
     # Pre-compute BS/CW sales per hour (for the two new heatmap rows).
     # BS/CW sales = projected BS qty × $12.50 + projected CW qty × $14.50.
     # Non-BS/CW sales = adjusted hourly sales - BS/CW sales (clipped to >=0).
-    from forward_projection import NATE_BS_PRICE, NATE_CW_PRICE
+    from forward_projection import NATE_BS_PRICE, NATE_CW_PRICE, NATE_BB_PRICE
     bscw_sales_by_h: Dict[int, float] = {}
     other_sales_by_h: Dict[int, float] = {}
     for h in DISPLAY_HOURS:
         bs_p, cw_p = _proj_bscw(dow, h)
-        bscw = bs_p * NATE_BS_PRICE + cw_p * NATE_CW_PRICE
+        bb_p = _proj_bb(dow, h)
+        bscw = bs_p * NATE_BS_PRICE + cw_p * NATE_CW_PRICE + bb_p * NATE_BB_PRICE
         total = adj_sales.get((dow, h), 0)
         bscw = min(bscw, total)
         other = max(0, total - bscw)
@@ -891,7 +1011,8 @@ def _render_day_block(
     other_sales_day = 0.0
     for h in range(6, 24):
         bs_p, cw_p = _proj_bscw(dow, h)
-        bscw_h = bs_p * NATE_BS_PRICE + cw_p * NATE_CW_PRICE
+        bb_p = _proj_bb(dow, h)
+        bscw_h = bs_p * NATE_BS_PRICE + cw_p * NATE_CW_PRICE + bb_p * NATE_BB_PRICE
         total_h = adj_sales.get((dow, h), 0)
         bscw_h = min(bscw_h, total_h)
         bscw_sales_day += bscw_h
@@ -906,6 +1027,7 @@ def _render_day_block(
     sched_cells = ""
     bs_cells = ""
     cw_cells = ""
+    bb_cells = ""
 
     # Build other_sales_proj for need rule (per-(dow,h) keyed to match adj_sales)
     other_sales_proj: Dict[Tuple[int, int], float] = {
@@ -984,6 +1106,13 @@ def _render_day_block(
         else:
             cw_cells += f'<div class="heat-cell" style="background:#f5f1ea;color:#9b9387">—</div>'
 
+        bb_q = proj_bb_by_h.get(h, 0.0)
+        if bb_q >= 0.5:
+            bg = sequential_color(bb_q, max_bb)
+            bb_cells += f'<div class="heat-cell" style="background:{bg};color:#1a1814">{bb_q:.0f}</div>'
+        else:
+            bb_cells += f'<div class="heat-cell" style="background:#f5f1ea;color:#9b9387">—</div>'
+
     # Get day adjustment description (for header)
     all_adj = week_config.adjustments_fn()
     day_adj_summary = all_adj[d].summary()
@@ -1017,12 +1146,13 @@ def _render_day_block(
     </div>
     <div class="heat-row"><div class="lbl"><div class="name-row"><span class="name">orders</span><span class="unit">/hr</span></div></div><div class="cells">{orders_cells}</div></div>
     <div class="heat-row"><div class="lbl"><div class="name-row"><span class="name">sales</span><span class="unit">/hr</span></div></div><div class="cells">{sales_cells}</div></div>
-    <div class="heat-row"><div class="lbl"><div class="name-row"><span class="name">BS+CW sales</span><span class="unit">/hr</span></div><div class="total-row"><span class="total-proj">${bscw_sales_day:.0f}</span><span class="total-avg">/ day</span></div></div><div class="cells">{bscw_sales_cells}</div></div>
+    <div class="heat-row"><div class="lbl"><div class="name-row"><span class="name">BS+CW+BB sales</span><span class="unit">/hr</span></div><div class="total-row"><span class="total-proj">${bscw_sales_day:.0f}</span><span class="total-avg">/ day</span></div></div><div class="cells">{bscw_sales_cells}</div></div>
     <div class="heat-row"><div class="lbl"><div class="name-row"><span class="name">Other sales</span><span class="unit">/hr</span></div><div class="total-row"><span class="total-proj">${other_sales_day:.0f}</span><span class="total-avg">/ day</span></div></div><div class="cells">{other_sales_cells}</div></div>
     <div class="heat-row compare"><div class="lbl"><div class="name-row"><span class="name">FOH need</span><span class="unit">people</span></div></div><div class="cells">{need_cells}</div></div>
     <div class="heat-row compare"><div class="lbl"><div class="name-row"><span class="name">FOH sched</span><span class="unit">people</span></div></div><div class="cells">{sched_cells}</div></div>
     <div class="heat-row"><div class="lbl"><div class="name-row"><span class="name">Bfast Sand</span><span class="unit">/hr</span></div><div class="total-row"><span class="total-proj">{bs_proj_day:.0f}</span><span class="total-avg">/ {bs_avg_day:.0f} avg</span></div></div><div class="cells">{bs_cells}</div></div>
     <div class="heat-row"><div class="lbl"><div class="name-row"><span class="name">Caesar Wrap</span><span class="unit">/hr</span></div><div class="total-row"><span class="total-proj">{cw_proj_day:.0f}</span><span class="total-avg">/ {cw_avg_day:.0f} avg</span></div></div><div class="cells">{cw_cells}</div></div>
+    <div class="heat-row"><div class="lbl"><div class="name-row"><span class="name">Galbi Burrito</span><span class="unit">/hr</span></div><div class="total-row"><span class="total-proj">{bb_proj_day:.0f}</span><span class="total-avg">/ {bb_avg_day:.0f} avg</span></div></div><div class="cells">{bb_cells}</div></div>
   </div>
 </section>
 """

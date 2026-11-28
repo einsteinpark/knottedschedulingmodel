@@ -42,11 +42,14 @@ import urllib.request
 import urllib.error
 import json
 
-TRACKED_ITEMS = ["Breakfast Sandwich", "Chicken Caesar Wrap"]
+TRACKED_ITEMS = ["Breakfast Sandwich", "Chicken Caesar Wrap", "Galbi Breakfast Burrito"]
 _ITEM_ALIASES = {  # map Toast displayNames -> canonical tracked name if they differ
     "breakfast sandwich": "Breakfast Sandwich",
     "chicken caesar wrap": "Chicken Caesar Wrap",
     "caesar wrap": "Chicken Caesar Wrap",
+    "galbi breakfast burrito": "Galbi Breakfast Burrito",
+    "galbi burrito": "Galbi Breakfast Burrito",
+    "breakfast burrito": "Galbi Breakfast Burrito",
 }
 
 
@@ -257,18 +260,22 @@ def _write_actuals(data_dir: Path, day_net, day_orders, day_items, week_start: d
     if path.exists():
         with path.open() as f:
             for row in csv.DictReader(f):
+                # bb column is new; older files won't have it -> default "0"
                 existing[row["date"]] = [row["date"], row["net_sales"],
-                                         row["orders"], row["bs"], row["cw"]]
+                                         row["orders"], row["bs"], row["cw"],
+                                         row.get("bb", "0")]
     for d in day_net:
         if d < week_start:
             continue
         key = d.isoformat()
         bs = int(round(day_items.get((d, "Breakfast Sandwich"), 0)))
         cw = int(round(day_items.get((d, "Chicken Caesar Wrap"), 0)))
-        existing[key] = [key, f"{day_net[d]:.2f}", str(day_orders[d]), str(bs), str(cw)]
+        bb = int(round(day_items.get((d, "Galbi Breakfast Burrito"), 0)))
+        existing[key] = [key, f"{day_net[d]:.2f}", str(day_orders[d]),
+                         str(bs), str(cw), str(bb)]
     with path.open("w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["date", "net_sales", "orders", "bs", "cw"])
+        w.writerow(["date", "net_sales", "orders", "bs", "cw", "bb"])
         for key in sorted(existing):
             w.writerow(existing[key])
 

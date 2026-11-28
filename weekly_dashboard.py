@@ -169,6 +169,8 @@ section.labor-outlook{ border-left:3px solid var(--terracotta); }
   .tabs{ display:flex; width:100%; }
   .tab-btn{ flex:1; justify-content:center; }
 }
+/* item scorecard: muted "(proj)" parenthetical next to the actual */
+.bs-accuracy .base{ color:var(--ink-soft); font-weight:400; font-size:0.9em; }
 /* =================== END KINTOW / COLETTE RESTYLE =================== */
 """
 

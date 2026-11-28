@@ -17,11 +17,12 @@ import csv
 import config
 
 
-TRACKED_ITEMS = ["Breakfast Sandwich", "Chicken Caesar Wrap"]
+TRACKED_ITEMS = ["Breakfast Sandwich", "Chicken Caesar Wrap", "Galbi Breakfast Burrito"]
 # Display labels (shorter for compact heatmap rows)
 ITEM_LABELS = {
     "Breakfast Sandwich": "Bfast Sand",
     "Chicken Caesar Wrap": "Caesar Wrap",
+    "Galbi Breakfast Burrito": "Galbi Burrito",
 }
 
 

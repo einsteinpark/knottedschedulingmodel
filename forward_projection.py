@@ -144,6 +144,7 @@ class DayAdjustment:
 # Item prices (used to convert BS/CW qty to revenue contribution)
 NATE_BS_PRICE = 12.50
 NATE_CW_PRICE = 14.50
+NATE_BB_PRICE = 13.50  # Galbi Breakfast Burrito (approx; qty-driven, refine when data lands)
 # Hours where BS/CW actually sell in volume
 NATE_BSCW_HOURS = set(range(8, 14))
 
